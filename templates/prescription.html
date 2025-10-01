@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - MediQueue{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+
+    <div class="card shadow mb-4 mt-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Prescription Details</h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.patient_id.label(class="form-label") }}
+                            {{ form.patient_id(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.diagnosis.label(class="form-label") }}
+                            {{ form.diagnosis(class="form-control", rows=3) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.symptoms.label(class="form-label") }}
+                            {{ form.symptoms(class="form-control", rows=3) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.medications.label(class="form-label") }}
+                            {{ form.medications(class="form-control", rows=3) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.dosage_instructions.label(class="form-label") }}
+                            {{ form.dosage_instructions(class="form-control", rows=3) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.duration.label(class="form-label") }}
+                            {{ form.duration(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.special_instructions.label(class="form-label") }}
+                            {{ form.special_instructions(class="form-control", rows=3) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.follow_up_date.label(class="form-label") }}
+                            {{ form.follow_up_date(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.follow_up_notes.label(class="form-label") }}
+                            {{ form.follow_up_notes(class="form-control", rows=3) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.lab_tests.label(class="form-label") }}
+                            {{ form.lab_tests(class="form-control", rows=3) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.referrals.label(class="form-label") }}
+                            {{ form.referrals(class="form-control", rows=3) }}
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <a href="{{ url_for('doctor.view_prescriptions') }}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

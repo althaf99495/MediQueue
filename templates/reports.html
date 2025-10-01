@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-4">Reports</h1>
+    <div class="card">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('admin.reports') }}">
+                <div class="row">
+                    <div class="col-md-5">
+                        <label for="start_date">Start Date</label>
+                        <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
+                    </div>
+                    <div class="col-md-5">
+                        <label for="end_date">End Date</label>
+                        <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn btn-primary form-control">Generate</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Download Reports</h5>
+            <a href="{{ url_for('admin.download_report', report_type='payments', format='csv', start_date=start_date, end_date=end_date) }}" class="btn btn-success">Download Payments (CSV)</a>
+            <a href="{{ url_for('admin.download_report', report_type='patients', format='csv', start_date=start_date, end_date=end_date) }}" class="btn btn-success">Download Patients (CSV)</a>
+            <a href="{{ url_for('admin.download_report', report_type='payments', format='pdf', start_date=start_date, end_date=end_date) }}" class="btn btn-info">Download Payments (PDF)</a>
+            <a href="{{ url_for('admin.download_report', report_type='patients', format='pdf', start_date=start_date, end_date=end_date) }}" class="btn btn-info">Download Patients (PDF)</a>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Payments</h5>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Patient</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments_data %}
+                        <tr>
+                            <td>{{ payment.id }}</td>
+                            <td>
+                                {% if payment.patient and payment.patient.user %}
+                                    {{ payment.patient.user.first_name }} {{ payment.patient.user.last_name }}
+                                {% else %}
+                                    [Patient data not available]
+                                {% endif %}
+                            </td>
+                            <td>{{ payment.amount }}</td>
+                            <td>{{ payment.created_at.strftime('%Y-%m-%d') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">New Patients</h5>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Date Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for patient in patients_data %}
+                        <tr>
+                            <td>{{ patient.id }}</td>
+                            <td>
+                                {% if patient.user %}
+                                    {{ patient.user.first_name }} {{ patient.user.last_name }}
+                                {% else %}
+                                    [User data not available]
+                                {% endif %}
+                            </td>
+                            <td>{{ patient.created_at.strftime('%Y-%m-%d') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

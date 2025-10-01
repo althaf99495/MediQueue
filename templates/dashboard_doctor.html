@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Dashboard - MediQueue{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Doctor Dashboard</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('doctor.add_prescription') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>New Prescription
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-info text-white animate-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ total_patients_today }}</h4>
+                        <p>Today's Patients</p>
+                    </div>
+                    <i class="fas fa-user-injured fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white animate-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ completed_today }}</h4>
+                        <p>Completed Today</p>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-white animate-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ today_queue|length }}</h4>
+                        <p>In Queue</p>
+                    </div>
+                    <i class="fas fa-clock fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <h5>Today's Patient Queue</h5>
+        <div class="card animate-card">
+            <div class="card-body">
+                {% if today_queue %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Patient</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Wait Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for queue, patient in today_queue %}
+                            <tr class="{{ 'table-warning' if queue.status == 'in_progress' else '' }}">
+                                <td>{{ queue.queue_number }}</td>
+                                <td>
+                                    <strong>{{ patient.full_name }}</strong><br>
+                                    <small class="text-muted">{{ patient.patient_id }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'danger' if queue.priority == 'urgent' else 'warning' if queue.priority == 'high' else 'primary' }}">
+                                        {{ queue.priority.title() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'warning' if queue.status == 'waiting' else 'info' if queue.status == 'in_progress' else 'success' }}">
+                                        {{ queue.status.replace('_', ' ').title() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if queue.created_at %}
+                                    {{ ((now() - queue.created_at).total_seconds() / 60) | int }} min
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if queue.status == 'waiting' %}
+                                    <a href="{{ url_for('doctor.call_patient', queue_id=queue.id) }}" 
+                                       class="btn btn-sm btn-primary">
+                                        <i class="fas fa-phone"></i> Call
+                                    </a>
+                                    {% elif queue.status == 'in_progress' %}
+                                    <a href="{{ url_for('doctor.complete_consultation', queue_id=queue.id) }}" 
+                                       class="btn btn-sm btn-success">
+                                        <i class="fas fa-check"></i> Complete
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No patients in queue today.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

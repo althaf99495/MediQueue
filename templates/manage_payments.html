@@ -1,0 +1,92 @@
+
+{% extends "base.html" %}
+{% from 'macros.html' import render_field %}
+
+{% block title %}{{ title|default('Manage Payments') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">{{ title|default('Manage Payments') }}</h1>
+
+    {% if form %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Add New Payment</h5>
+            <form method="POST" action="{{ url_for('receptionist.add_payment') }}">
+                {{ form.hidden_tag() }}
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ render_field(form.patient_id, class="form-control") }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ render_field(form.doctor_id, class="form-control") }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ render_field(form.amount, class="form-control") }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ render_field(form.payment_method, class="form-control") }}
+                    </div>
+                </div>
+                {{ render_field(form.payment_type, class="form-control") }}
+                {{ render_field(form.description, class="form-control") }}
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ render_field(form.discount, class="form-control") }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ render_field(form.tax_amount, class="form-control") }}
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Add Payment</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">All Payments</h5>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Patient</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment, patient in payments.items %}
+                    <tr>
+                        <td>{{ payment.payment_id }}</td>
+                        <td>{{ patient.full_name }}</td>
+                        <td>{{ payment.total_amount }}</td>
+                        <td>{{ payment.payment_method }}</td>
+                        <td><span class="badge bg-success">{{ payment.status }}</span></td>
+                        <td>{{ payment.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-info">Details</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <nav>
+                <ul class="pagination">
+                    {% for page_num in payments.iter_pages() %}
+                        <li class="page-item {% if page_num == payments.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('receptionist.manage_payments', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}

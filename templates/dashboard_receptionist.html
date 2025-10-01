@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Receptionist Dashboard - MediQueue{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Receptionist Dashboard</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('receptionist.register_patient') }}" class="btn btn-primary">
+                <i class="fas fa-user-plus me-2"></i>Register Patient
+            </a>
+            <a href="{{ url_for('receptionist.add_payment') }}" class="btn btn-success">
+                <i class="fas fa-money-bill me-2"></i>Add Payment
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white animate-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ today_patients }}</h4>
+                        <p>Today's New Patients</p>
+                    </div>
+                    <i class="fas fa-user-injured fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white animate-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ today_queue }}</h4>
+                        <p>Today's Queue</p>
+                    </div>
+                    <i class="fas fa-list-ol fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white animate-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ today_payments }}</h4>
+                        <p>Today's Payments</p>
+                    </div>
+                    <i class="fas fa-money-bill fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white animate-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ active_queue|length }}</h4>
+                        <p>Active Queue</p>
+                    </div>
+                    <i class="fas fa-clock fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <h5>Recent Patients</h5>
+        <div class="card animate-card">
+            <div class="card-body">
+                {% if recent_patients %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Patient ID</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Registered</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for patient in recent_patients %}
+                            <tr>
+                                <td>{{ patient.patient_id }}</td>
+                                <td>{{ patient.full_name }}</td>
+                                <td>{{ patient.phone }}</td>
+                                <td>{{ patient.created_at.strftime('%m/%d/%Y') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No recent patients.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <h5>Active Queue</h5>
+        <div class="card animate-card">
+            <div class="card-body">
+                {% if active_queue %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Patient</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for queue in active_queue %}
+                            <tr>
+                                <td>{{ queue.queue_number }}</td>
+                                <td>{{ queue.patient.full_name }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'danger' if queue.priority == 'urgent' else 'warning' if queue.priority == 'high' else 'primary' }}">
+                                        {{ queue.priority.title() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'warning' if queue.status == 'waiting' else 'info' }}">
+                                        {{ queue.status.replace('_', ' ').title() }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No active queue entries.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

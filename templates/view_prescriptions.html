@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}My Prescriptions - MediQueue{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">My Prescriptions</h1>
+        <a href="{{ url_for('doctor.add_prescription') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Prescription
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">All Prescriptions</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Prescription ID</th>
+                            <th>Patient Name</th>
+                            <th>Diagnosis</th>
+                            <th>Date Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if prescriptions.items %}
+                            {% for prescription, patient in prescriptions.items %}
+                            <tr>
+                                <td>{{ prescription.prescription_id }}</td>
+                                <td>{{ patient.full_name }}</td>
+                                <td>{{ prescription.diagnosis }}</td>
+                                <td>{{ prescription.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <a href="#" class="btn btn-info btn-sm">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">No prescriptions found.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if prescriptions.has_prev %}
+                <li class="page-item"><a class="page-link" href="{{ url_for('doctor.view_prescriptions', page=prescriptions.prev_num) }}">Previous</a></li>
+            {% else %}
+                <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+            {% endif %}
+
+            {% for page_num in prescriptions.iter_pages() %}
+                {% if page_num %}
+                    {% if prescriptions.page == page_num %}
+                        <li class="page-item active"><a class="page-link" href="{{ url_for('doctor.view_prescriptions', page=page_num) }}">{{ page_num }}</a></li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for('doctor.view_prescriptions', page=page_num) }}">{{ page_num }}</a></li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if prescriptions.has_next %}
+                <li class="page-item"><a class="page-link" href="{{ url_for('doctor.view_prescriptions', page=prescriptions.next_num) }}">Next</a></li>
+            {% else %}
+                <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endblock %}
