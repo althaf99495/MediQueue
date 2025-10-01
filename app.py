@@ -5,6 +5,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_migrate import Migrate
 from extensions import db, login_manager
 from config import Config
+import manage
 from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
@@ -19,6 +20,7 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
     migrate.init_app(app, db)
+    manage.init_app(app)
     
     login_manager.login_view = 'auth.login'
     login_manager.login_message_category = 'info'
