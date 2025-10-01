@@ -4,6 +4,7 @@ from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_migrate import Migrate
 from extensions import db, login_manager
+from config import Config
 from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
@@ -12,13 +13,8 @@ migrate = Migrate()
 def create_app():
     """Application factory function."""
     app = Flask(__name__)
-    app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-for-replit")
+    app.config.from_object('config.Config')
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
-    
-    # Force SQLite usage as specified in requirements
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///mediqueue.db"
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_recycle": 300, "pool_pre_ping": True}
-    app.config["WTF_CSRF_ENABLED"] = True
     
     db.init_app(app)
     login_manager.init_app(app)
