@@ -1,74 +1,84 @@
-# MediQueue - Clinic Management System
+# MediQueue 🏥
 
-## Overview
+MediQueue is a comprehensive, web-based application designed to streamline patient queue management and clinic operations. It provides a digital solution for managing patient flow, from check-in to consultation, prescription, and payment, reducing wait times and improving efficiency.
 
-MediQueue is a comprehensive web-based clinic management system built with Flask that handles patient registration, queue management, and medical workflows. The application serves different user roles (admin, doctor, receptionist) with specialized dashboards and functionalities. It includes features for patient management, appointment scheduling, prescription handling, payment processing, and AI-powered queue prediction. The system is designed for small to medium-sized medical clinics to streamline their operations and improve patient flow management.
+## ✨ Key Features
 
-## User Preferences
+- **Role-Based Access Control:** Separate, dedicated dashboards and functionalities for different user roles:
+    - **Administrator:** Manages users, views system-wide reports, and oversees clinic operations.
+    - **Receptionist:** Manages patient registration, updates patient information, and controls the patient queue.
+    - **Doctor:** Views the patient queue, conducts consultations, and issues prescriptions.
+- **Dynamic Patient Queue:** A real-time view of the patient queue, allowing doctors and receptionists to manage patient flow effectively.
+- **Patient Management:** A complete system for registering new patients and managing existing patient records.
+- **Prescription & Payment System:** Functionality for doctors to create and manage prescriptions, and for receptionists to handle payments.
+- **AI-Powered Predictions:** Utilizes a machine learning model to provide insights (e.g., predicted wait times).
+- **Reporting:** Generation of PDF reports for various clinic metrics.
 
-Preferred communication style: Simple, everyday language.
+## 🛠️ Tech Stack
 
-## System Architecture
+- **Backend:** Python, Flask
+- **Database:** SQLite with SQLAlchemy ORM
+- **Authentication:** Flask-Login
+- **Frontend:** HTML, CSS (with elements of Bootstrap likely, based on template structure)
+- **Form Handling:** Flask-WTF
+- **Data Science:** Pandas, Scikit-learn
+- **PDF Generation:** ReportLab
 
-### Backend Framework
-- **Flask-based Architecture**: Uses Flask as the core web framework with a modular blueprint structure
-- **Application Factory Pattern**: Centralized app creation in `app.py` with configuration management
-- **Database Abstraction**: SQLAlchemy ORM for database operations with Flask-Migrate for schema management
+## 🚀 Getting Started
 
-### Database Design
-- **SQLite Database**: Local file-based database (`mediqueue.db`) for simplicity and portability
-- **Relational Schema**: Six main entities (User, Doctor, Patient, Queue, Payment, Prescription) with proper foreign key relationships
-- **Connection Management**: Connection pooling and health checks configured for reliability
+Follow these instructions to set up and run the project on your local machine.
 
-### Authentication & Authorization
-- **Flask-Login**: Session-based authentication with user role management
-- **Password Security**: Werkzeug password hashing for secure credential storage
-- **Role-based Access Control**: Decorator-based authorization with three main roles (admin, doctor, receptionist)
+### Prerequisites
 
-### Application Structure
-- **Blueprint Organization**: Modular route organization with separate blueprints for each user role
-- **Form Handling**: Flask-WTF for form validation and CSRF protection
-- **Template System**: Jinja2 templating with Bootstrap 5 for responsive UI
+- Python 3.x
+- pip (Python package installer)
 
-### AI Integration
-- **Queue Prediction Module**: scikit-learn based linear regression model for wait time prediction
-- **Data Analysis**: Pandas integration for processing queue and patient flow data
-- **Model Persistence**: Pickle-based model storage for trained algorithms
+### Installation
 
-### Reporting System
-- **PDF Generation**: ReportLab integration for generating patient reports and receipts
-- **Data Export**: Pandas-powered data analysis and export capabilities
-- **Real-time Metrics**: Dashboard statistics with live queue monitoring
+1.  **Clone the repository:**
+    ```bash
+    git clone <your-repository-url>
+    cd MediQueue
+    ```
 
-## External Dependencies
+2.  **Create and activate a virtual environment:**
+    - On Windows:
+      ```bash
+      python -m venv venv
+      .\venv\Scripts\activate
+      ```
+    - On macOS/Linux:
+      ```bash
+      python3 -m venv venv
+      source venv/bin/activate
+      ```
 
-### Core Framework Dependencies
-- **Flask**: Web framework with extensions (SQLAlchemy, Login, Migrate, WTF)
-- **Werkzeug**: WSGI utilities and security features
-- **Waitress**: Production WSGI server for deployment
+3.  **Install the required dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-### Database & ORM
-- **SQLite**: Embedded database engine (no external server required)
-- **SQLAlchemy**: Database ORM and query builder
-- **Flask-Migrate**: Database schema migration management
+4.  **Initialize the database:**
+    This will create the `mediqueue.db` file and populate it with initial data, including default user accounts.
+    ```bash
+    python init_db.py
+    ```
 
-### UI & Frontend
-- **Bootstrap 5**: CSS framework via CDN for responsive design
-- **Font Awesome**: Icon library via CDN for UI elements
-- **Jinja2**: Template engine (included with Flask)
+5.  **Run the application:**
+    ```bash
+    flask run
+    ```
+    The application will be available at `http://127.0.0.1:5000`.
 
-### Data Processing & AI
-- **Pandas**: Data manipulation and analysis library
-- **scikit-learn**: Machine learning library for queue prediction models
-- **NumPy**: Numerical computing support (scikit-learn dependency)
+## 🔑 Usage & Default Logins
 
-### Document Generation
-- **ReportLab**: PDF generation for reports and receipts
+Once the application is running, you can log in with the following default accounts to explore the different roles:
 
-### Security & Forms
-- **Flask-WTF**: Form handling with CSRF protection
-- **Flask-Login**: User session management and authentication
+| Role         | Username       | Password         |
+|--------------|----------------|------------------|
+| Administrator| `admin`        | `admin123`       |
+| Doctor       | `doctor`       | `doctor123`      |
+| Receptionist | `receptionist` | `receptionist123`|
 
-### Production Deployment
-- **ProxyFix**: Werkzeug middleware for handling reverse proxy headers
-- **Waitress**: Production-ready WSGI server (alternative to development server)
+---
+*This README was generated by Gemini.*
