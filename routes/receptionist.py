@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user
-from datetime import datetime, date
+from datetime import datetime
 from models import Patient, Queue, Payment, Doctor
 from extensions import db
-from .forms import PatientForm, QueueForm, PaymentForm
+from .forms import PatientForm, PaymentForm
 from .decorators import receptionist_required, admin_or_receptionist_required
 
 receptionist_bp = Blueprint('receptionist', __name__)

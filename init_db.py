@@ -6,9 +6,8 @@ Creates the database tables and populates them with default users.
 
 from app import create_app
 from extensions import db
-from models import User, Doctor, Patient, Queue, Payment, Prescription
-from datetime import datetime, date
-import os
+from models import User, Doctor, Patient
+from datetime import date
 
 def init_database():
     """Initialize database with tables and default data."""

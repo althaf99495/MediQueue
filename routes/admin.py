@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
-from flask_login import login_required, current_user
+from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask_login import login_required
 from datetime import datetime, timedelta
-from models import User, Doctor, Patient, Queue, Payment, Prescription
+from models import User, Doctor, Patient, Payment
 from extensions import db
-from .forms import UserForm, DoctorForm
+from .forms import UserForm
 from .decorators import admin_required
 import pandas as pd
 from io import BytesIO

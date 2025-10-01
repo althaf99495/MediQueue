@@ -1,7 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, TextAreaField, DateField, FloatField, IntegerField, BooleanField
 from wtforms.validators import DataRequired, Email, Length, Optional, NumberRange
-from datetime import date
 
 def int_or_none(value):
     if value == '' or value is None:
