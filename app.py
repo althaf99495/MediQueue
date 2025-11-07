@@ -1,15 +1,15 @@
 from flask import Flask, render_template, redirect, url_for, flash
 from flask_login import LoginManager, current_user
-from flask_socketio import SocketIO
 from config import Config
 from models import db, User
 import os
+from extensions import socketio
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
 db.init_app(app)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+socketio.init_app(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)

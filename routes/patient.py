@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from models import db, User, Appointment, QueueEntry, MedicalRecord, Prescription, Department, DoctorAvailability
 from services import QueueService
 from datetime import datetime, timedelta, time as dt_time
-from app import socketio
+from extensions import socketio
 from functools import wraps
 import qrcode
 import io

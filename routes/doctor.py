@@ -7,7 +7,7 @@ from functools import wraps
 import io
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
-from app import socketio
+from extensions import socketio
 
 doctor_bp = Blueprint('doctor', __name__)
 queue_service = QueueService()
