@@ -85,19 +85,3 @@ with app.app_context():
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
 
-# Socket.IO helpers for clients to join/leave rooms
-from flask_socketio import join_room, leave_room
-
-
-@socketio.on('join')
-def handle_join(data):
-    room = data.get('room')
-    if room:
-        join_room(room)
-
-
-@socketio.on('leave')
-def handle_leave(data):
-    room = data.get('room')
-    if room:
-        leave_room(room)

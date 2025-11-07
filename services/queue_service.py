@@ -35,10 +35,10 @@ class QueueService:
             'joined_at': datetime.utcnow().isoformat()
         }
         
-        score = -priority if priority > 0 else datetime.utcnow().timestamp()
+        score = -priority if priority > 0 else (datetime.utcnow().timestamp(), patient_id)
         
         self.redis_client.zadd(queue_key, {json.dumps(entry_data): score})
-        self.redis_client.set(position_key, doctor_id)
+        self.redis_client.set(position_key, str(doctor_id))
         
         return True
     

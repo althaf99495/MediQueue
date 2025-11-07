@@ -1,6 +1,10 @@
+import eventlet
+eventlet.monkey_patch()
+
 from flask_socketio import SocketIO, join_room, leave_room
 
-socketio = SocketIO(cors_allowed_origins="*", async_mode='eventlet')
+# Initialize with explicit engine and async_handlers
+socketio = SocketIO(cors_allowed_origins="*", async_mode='eventlet', async_handlers=True)
 
 @socketio.on('join')
 def handle_join(data):

@@ -236,4 +236,4 @@ def availability():
 
     # GET -> show availability
     availability = DoctorAvailability.query.filter_by(doctor_id=current_user.id).all()
-    return render_template('doctor/dashboard.html', availability=availability)
+    return render_template('doctor/availability.html', availability=availability)
