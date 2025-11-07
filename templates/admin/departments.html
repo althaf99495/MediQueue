@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Manage Departments</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDeptModal">
+                <i class="bi bi-plus-circle"></i> Add New Department
+            </button>
+        </div>
+
+        <div class="row">
+            {% for dept in departments %}
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="card-title">{{ dept.name }}</h5>
+                                <p class="card-text text-muted">{{ dept.description or 'No description' }}</p>
+                            </div>
+                            <span class="badge bg-{{ 'success' if dept.is_active else 'danger' }}">
+                                {{ 'Active' if dept.is_active else 'Inactive' }}
+                            </span>
+                        </div>
+                        <p class="mb-0 small text-muted">Created: {{ dept.created_at.strftime('%B %d, %Y') }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addDeptModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Department</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.add_department') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Department Name *</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Add Department</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

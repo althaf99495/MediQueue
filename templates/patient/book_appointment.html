@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="card p-4">
+        <h2 class="mb-4">Book an Appointment</h2>
+        
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="department_id" class="form-label">Department</label>
+                    <select class="form-select" id="department_id" name="department_id" onchange="filterDoctors()">
+                        <option value="">Select Department</option>
+                        {% for dept in departments %}
+                            <option value="{{ dept.id }}">{{ dept.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="doctor_id" class="form-label">Doctor *</label>
+                    <select class="form-select" id="doctor_id" name="doctor_id" required>
+                        <option value="">Select Doctor</option>
+                        {% for doctor in doctors %}
+                            <option value="{{ doctor.id }}" data-department="{{ doctor.department_id }}">
+                                Dr. {{ doctor.full_name }} - {{ doctor.specialization or 'General' }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="appointment_date" class="form-label">Date *</label>
+                    <input type="date" class="form-control" id="appointment_date" name="appointment_date" required min="{{ now.strftime('%Y-%m-%d') }}">
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="slot_time" class="form-label">Time Slot *</label>
+                    <select class="form-select" id="slot_time" name="slot_time" required>
+                        <option value="">Select Time</option>
+                        <option value="09:00">09:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="11:00">11:00 AM</option>
+                        <option value="12:00">12:00 PM</option>
+                        <option value="14:00">02:00 PM</option>
+                        <option value="15:00">03:00 PM</option>
+                        <option value="16:00">04:00 PM</option>
+                        <option value="17:00">05:00 PM</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="symptoms" class="form-label">Symptoms / Reason for Visit</label>
+                <textarea class="form-control" id="symptoms" name="symptoms" rows="3" placeholder="Describe your symptoms or reason for appointment"></textarea>
+            </div>
+
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> You will receive confirmation once your appointment is scheduled.
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Book Appointment</button>
+                <a href="{{ url_for('patient.dashboard') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="card mt-4 p-4">
+        <h4>Available Doctors</h4>
+        <div class="row mt-3">
+            {% for doctor in doctors %}
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Dr. {{ doctor.full_name }}</h5>
+                        <p class="card-text">
+                            <strong>{{ doctor.specialization or 'General Practitioner' }}</strong><br>
+                            <span class="text-muted">{{ doctor.department.name if doctor.department else 'General' }}</span><br>
+                            <span class="text-primary">Consultation Fee: ${{ doctor.consultation_fee }}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+function filterDoctors() {
+    const deptId = document.getElementById('department_id').value;
+    const doctorSelect = document.getElementById('doctor_id');
+    const options = doctorSelect.getElementsByTagName('option');
+    
+    for (let i = 1; i < options.length; i++) {
+        const option = options[i];
+        const docDeptId = option.getAttribute('data-department');
+        
+        if (!deptId || docDeptId === deptId) {
+            option.style.display = 'block';
+        } else {
+            option.style.display = 'none';
+        }
+    }
+}
+</script>
+{% endblock %}

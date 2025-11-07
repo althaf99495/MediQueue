@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="card p-4">
+        <h2 class="mb-4">Consultation: {{ patient.full_name }}</h2>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card bg-light p-3">
+                    <h6>Patient Info</h6>
+                    <p class="mb-1"><strong>Age:</strong> {{ patient.age or 'N/A' }}</p>
+                    <p class="mb-1"><strong>Gender:</strong> {{ patient.gender or 'N/A' }}</p>
+                    <p class="mb-0"><strong>Blood Group:</strong> {{ patient.blood_group or 'N/A' }}</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card bg-light p-3">
+                    <h6>Recent History</h6>
+                    {% if medical_history %}
+                        <p class="mb-0 small">Last visit: {{ medical_history[0].visit_date.strftime('%Y-%m-%d') }}</p>
+                    {% else %}
+                        <p class="mb-0 small text-muted">No previous visits</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <form method="POST">
+            <div class="mb-3">
+                <label for="symptoms" class="form-label">Symptoms *</label>
+                <textarea class="form-control" id="symptoms" name="symptoms" rows="3" required></textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label for="diagnosis" class="form-label">Diagnosis *</label>
+                <textarea class="form-control" id="diagnosis" name="diagnosis" rows="3" required></textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label for="notes" class="form-label">Additional Notes</label>
+                <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+            </div>
+
+            <hr>
+
+            <h5 class="mt-4 mb-3">Prescription</h5>
+            
+            <div class="mb-3">
+                <label for="medications" class="form-label">Medications</label>
+                <textarea class="form-control" id="medications" name="medications" rows="4" placeholder="List medications, dosage, and frequency"></textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label for="instructions" class="form-label">Instructions</label>
+                <textarea class="form-control" id="instructions" name="instructions" rows="3" placeholder="Special instructions for the patient"></textarea>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> Complete Consultation
+                </button>
+                <a href="{{ url_for('doctor.dashboard') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

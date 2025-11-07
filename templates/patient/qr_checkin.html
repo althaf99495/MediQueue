@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card p-4 text-center">
+        <h2 class="mb-4">QR Code Check-in</h2>
+        
+        <p class="text-muted mb-4">Show this QR code at the hospital kiosk to check in for your appointment</p>
+        
+        <div class="d-flex justify-content-center mb-4">
+            <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code" class="img-fluid" style="max-width: 300px;">
+        </div>
+        
+        <div class="card bg-light p-3 mb-4">
+            <p class="mb-1"><strong>Name:</strong> {{ current_user.full_name }}</p>
+            <p class="mb-1"><strong>Email:</strong> {{ current_user.email }}</p>
+            <p class="mb-0"><strong>Patient ID:</strong> {{ current_user.id }}</p>
+        </div>
+        
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> This QR code is unique to you and can be used for all check-ins
+        </div>
+        
+        <a href="{{ url_for('patient.dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

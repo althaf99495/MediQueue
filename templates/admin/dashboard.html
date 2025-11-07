@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="dashboard-header">
+        <h2>Admin Dashboard</h2>
+        <p class="text-muted mb-0">System Overview and Management</p>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card stat-card-primary">
+                <i class="bi bi-people-fill" style="font-size: 2rem;"></i>
+                <h3 class="mt-2">{{ total_doctors }}</h3>
+                <p>Active Doctors</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card-success">
+                <i class="bi bi-person-fill" style="font-size: 2rem;"></i>
+                <h3 class="mt-2">{{ total_patients }}</h3>
+                <p>Registered Patients</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card-warning">
+                <i class="bi bi-building" style="font-size: 2rem;"></i>
+                <h3 class="mt-2">{{ total_departments }}</h3>
+                <p>Departments</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card-danger">
+                <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
+                <h3 class="mt-2">{{ patients_served_today }}</h3>
+                <p>Served Today</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card p-4 mb-4">
+                <h4 class="mb-3">Active Queues</h4>
+                {% if active_queues %}
+                    {% for queue in active_queues %}
+                    <div class="mb-2 p-2 bg-light rounded d-flex justify-content-between">
+                        <strong>Dr. {{ queue[0] }}</strong>
+                        <span class="badge bg-primary">{{ queue[1] }} patients</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No active queues</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card p-4 mb-4">
+                <h4 class="mb-3">Recent Appointments</h4>
+                {% if recent_appointments %}
+                    {% for apt in recent_appointments[:5] %}
+                    <div class="mb-2 p-2 bg-light rounded small">
+                        <strong>{{ apt.patient.full_name }}</strong> → Dr. {{ apt.doctor.full_name }}
+                        <br><span class="text-muted">{{ apt.appointment_date.strftime('%B %d, %I:%M %p') }}</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No recent appointments</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card p-4">
+                <h4 class="mb-3">Quick Actions</h4>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="{{ url_for('admin.manage_doctors') }}" class="btn btn-primary">
+                        <i class="bi bi-person-plus"></i> Manage Doctors
+                    </a>
+                    <a href="{{ url_for('admin.manage_departments') }}" class="btn btn-info">
+                        <i class="bi bi-building"></i> Manage Departments
+                    </a>
+                    <a href="{{ url_for('admin.manage_patients') }}" class="btn btn-success">
+                        <i class="bi bi-people"></i> View Patients
+                    </a>
+                    <a href="{{ url_for('admin.analytics') }}" class="btn btn-warning">
+                        <i class="bi bi-bar-chart"></i> Analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

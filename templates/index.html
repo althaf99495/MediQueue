@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Care You Can Believe In</h1>
+                <p class="lead mb-4">Smart hospital queue management system that reduces waiting times and improves patient-doctor coordination.</p>
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg px-4">Get Started</a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg px-4">Login</a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="bi bi-hospital" style="font-size: 12rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row text-center mb-5">
+        <div class="col-12">
+            <h2 class="fw-bold mb-4">Why Choose MediQueue</h2>
+        </div>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <div class="feature-icon mb-3">
+                    <i class="bi bi-person-check-fill"></i>
+                </div>
+                <h4>Expert Doctors</h4>
+                <p class="text-muted">Access to qualified medical professionals across multiple specializations.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <div class="feature-icon mb-3">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <h4>Real-Time Queue</h4>
+                <p class="text-muted">Live queue updates and estimated wait times for better planning.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <div class="feature-icon mb-3">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <h4>Easy Appointments</h4>
+                <p class="text-muted">Book appointments online or join walk-in queues instantly.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card p-5">
+                <h3 class="text-center mb-4">Get Started Today</h3>
+                <p class="text-center text-muted mb-4">Register as a patient to book appointments and manage your healthcare journey.</p>
+                <div class="text-center">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-5">Register Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
