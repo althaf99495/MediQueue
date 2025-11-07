@@ -1,0 +1,23 @@
+name: CD - Create release artifact
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create release archive
+        run: |
+          zip -r repo-${{ github.sha }}.zip . -x .git/**\* .github/**\*
+
+      - name: Create GitHub Release and upload artifact
+        uses: softprops/action-gh-release@v1
+        with:
+          files: repo-${{ github.sha }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

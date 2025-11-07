@@ -1,8 +1,9 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, send_file
 from flask_login import login_required, current_user
-from models import db, User, Appointment, QueueEntry, MedicalRecord, Prescription, Department
+from models import db, User, Appointment, QueueEntry, MedicalRecord, Prescription, Department, DoctorAvailability
 from services import QueueService
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time as dt_time
+from app import socketio
 from functools import wraps
 import qrcode
 import io
@@ -64,13 +65,39 @@ def book_appointment():
         if not doctor or not doctor.is_doctor():
             flash('Invalid doctor selected.', 'danger')
             return redirect(url_for('patient.book_appointment'))
-        
+        # parse appointment datetime
+        try:
+            appointment_dt = datetime.strptime(f"{appointment_date} {slot_time}", '%Y-%m-%d %H:%M')
+        except Exception:
+            flash('Invalid date/time format.', 'danger')
+            return redirect(url_for('patient.book_appointment'))
+
+        # check doctor availability for that day/time
+        day_of_week = appointment_dt.weekday()  # Monday=0
+        slot = appointment_dt.time()
+
+        avail_entries = DoctorAvailability.query.filter_by(
+            doctor_id=doctor_id,
+            day_of_week=day_of_week,
+            is_available=True
+        ).all()
+
+        is_slot_ok = False
+        for av in avail_entries:
+            if av.start_time <= slot <= av.end_time:
+                is_slot_ok = True
+                break
+
+        if not is_slot_ok and len(avail_entries) > 0:
+            flash('Selected slot is outside the doctor\'s availability. Please choose another time.', 'danger')
+            return redirect(url_for('patient.book_appointment'))
+
         appointment = Appointment(
             patient_id=current_user.id,
             doctor_id=doctor_id,
             department_id=doctor.department_id,
             appointment_type='scheduled',
-            appointment_date=datetime.strptime(f"{appointment_date} {slot_time}", '%Y-%m-%d %H:%M'),
+            appointment_date=appointment_dt,
             slot_time=slot_time,
             symptoms=symptoms,
             status='scheduled'
@@ -78,7 +105,18 @@ def book_appointment():
         
         db.session.add(appointment)
         db.session.commit()
-        
+        # notify the doctor in real-time (if connected)
+        try:
+            socketio.emit('appointment:created', {
+                'appointment_id': appointment.id,
+                'doctor_id': int(doctor_id),
+                'patient_id': current_user.id,
+                'appointment_date': appointment.appointment_date.isoformat()
+            }, room=f'doctor_{doctor_id}')
+        except Exception:
+            # non-fatal: continue even if notification fails
+            pass
+
         flash('Appointment booked successfully!', 'success')
         return redirect(url_for('patient.dashboard'))
     
@@ -117,7 +155,16 @@ def join_queue(doctor_id):
     db.session.commit()
     
     queue_service.enqueue(current_user.id, doctor_id, priority=0)
-    
+    # notify doctor and patient about queue update
+    try:
+        current_queue = queue_service.get_queue(doctor_id)
+        socketio.emit('queue:update', {'doctor_id': doctor_id, 'queue': current_queue}, room=f'doctor_{doctor_id}')
+        # notify the patient specifically
+        position_info = queue_service.get_position(current_user.id)
+        socketio.emit('queue:joined', {'position': position_info}, room=f'user_{current_user.id}')
+    except Exception:
+        pass
+
     flash(f'You have joined Dr. {doctor.full_name}\'s queue.', 'success')
     return redirect(url_for('patient.dashboard'))
 
@@ -135,7 +182,15 @@ def leave_queue():
     if queue_entry:
         queue_entry.status = 'cancelled'
         db.session.commit()
-    
+    # emit update to doctor and patient
+    try:
+        # if we stored doctor_id in queue_entry earlier, use it; else attempt to fetch position
+        if queue_entry:
+            socketio.emit('queue:update', {'doctor_id': queue_entry.doctor_id, 'queue': queue_service.get_queue(queue_entry.doctor_id)}, room=f'doctor_{queue_entry.doctor_id}')
+        socketio.emit('queue:left', {'patient_id': current_user.id}, room=f'user_{current_user.id}')
+    except Exception:
+        pass
+
     flash('You have left the queue.', 'info')
     return redirect(url_for('patient.dashboard'))
 
@@ -158,6 +213,43 @@ def prescriptions():
     ).order_by(Prescription.created_at.desc()).all()
     
     return render_template('patient/prescriptions.html', prescriptions=prescriptions)
+
+
+@patient_bp.route('/prescriptions/<int:prescription_id>/download')
+@login_required
+@patient_required
+def download_prescription(prescription_id):
+    prescription = Prescription.query.get_or_404(prescription_id)
+
+    if prescription.patient_id != current_user.id:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('patient.prescriptions'))
+
+    buffer = io.BytesIO()
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import letter
+
+    p = canvas.Canvas(buffer, pagesize=letter)
+
+    p.setFont("Helvetica-Bold", 20)
+    p.drawString(100, 750, "MediQueue - Medical Prescription")
+
+    p.setFont("Helvetica", 12)
+    p.drawString(100, 720, f"Date: {prescription.created_at.strftime('%Y-%m-%d')}")
+    p.drawString(100, 700, f"Doctor: Dr. {prescription.doctor.full_name}")
+    p.drawString(100, 680, f"Patient: {prescription.patient.full_name}")
+
+    p.drawString(100, 650, "Medications:")
+    p.drawString(100, 630, str(prescription.medications))
+
+    p.drawString(100, 600, "Instructions:")
+    p.drawString(100, 580, str(prescription.instructions))
+
+    p.showPage()
+    p.save()
+
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name=f'prescription_{prescription_id}.pdf', mimetype='application/pdf')
 
 @patient_bp.route('/qr-checkin')
 @login_required
