@@ -1,31 +1,73 @@
-<!DOCTYPE html>
-<html lang="en" class="h-full">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<head>
-    width: 8px;
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        darkMode: 'class',
+        theme: {
+            extend: {
+                fontFamily: {
+                    sans: ['Inter', 'sans-serif'],
+                    display: ['Outfit', 'sans-serif'],
+                },
+                colors: {
+                    teal: {
+                        400: '#2dd4bf',
+                        500: '#14b8a6',
+                        600: '#0d9488',
+                    },
+                    emerald: {
+                        400: '#34d399',
+                        500: '#10b981',
+                    },
+                    slate: {
+                        850: '#1e293b',
+                        900: '#0f172a',
+                        950: '#020617',
+                    }
+                },
+                animation: {
+                    'blob': 'blob 7s infinite',
+                },
+                keyframes: {
+                    blob: {
+                        '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                        '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                        '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                        '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                    }
+                }
+            }
+        }
+    }
+</script>
+
+<style>
+    /* Custom Scrollbar for Webkit */
+    ::-webkit-scrollbar {
+        width: 8px;
     }
 
     ::-webkit-scrollbar-track {
-    background: transparent;
+        background: transparent;
     }
 
     ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
+        background: #cbd5e1;
+        border-radius: 4px;
     }
 
     .dark ::-webkit-scrollbar-thumb {
-    background: #334155;
+        background: #334155;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+        background: #94a3b8;
     }
-    </style>
+</style>
 
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    {% block extra_css %}{% endblock %}
+{% block extra_css %}{% endblock %}
 </head>
 
 <body
@@ -36,8 +78,13 @@
         <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
             <!-- Logo -->
             <a class="flex items-center gap-2 group" href="{{ url_for('main.index') }}">
-                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="MediQueue Logo"
-                    class="h-8 w-8 rounded-xl shadow-lg shadow-teal-500/20 group-hover:scale-105 transition-transform duration-300">
+                <div
+                    class="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/20 group-hover:scale-105 transition-transform duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+                        stroke="currentColor" class="h-5 w-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                </div>
                 <span
                     class="text-xl font-bold font-display tracking-tight text-slate-900 dark:text-white">MediQueue</span>
             </a>
@@ -217,8 +264,13 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-2">
-                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="MediQueue Logo"
-                        class="h-6 w-6 rounded-lg shadow-sm">
+                    <div
+                        class="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+                            stroke="currentColor" class="h-3.5 w-3.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                    </div>
                     <span class="text-sm font-bold text-slate-900 dark:text-white">MediQueue</span>
                 </div>
                 <p class="text-center text-sm text-slate-500 dark:text-slate-400">&copy; 2025 MediQueue. Smart Hospital

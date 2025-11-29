@@ -1,30 +1,41 @@
-import requests
+import urllib.request
+import urllib.parse
+import urllib.error
+import http.cookiejar
 import re
 
 # Base URL
 BASE_URL = 'http://localhost:5000'
 
-# Create a session to persist cookies
-session = requests.Session()
+# Setup cookie jar to persist cookies (session)
+cookie_jar = http.cookiejar.CookieJar()
+opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookie_jar))
+urllib.request.install_opener(opener)
 
 def get_csrf_token(url):
-    response = session.get(url)
-    if response.status_code != 200:
-        print(f"Failed to load {url}: {response.status_code}")
+    try:
+        with urllib.request.urlopen(url) as response:
+            if response.getcode() != 200:
+                print(f"Failed to load {url}: {response.getcode()}")
+                return None
+            
+            html = response.read().decode('utf-8')
+            
+            # Extract CSRF token using regex
+            match = re.search(r'<input type="hidden" name="csrf_token" value="([^"]+)">', html)
+            if match:
+                return match.group(1)
+            
+            # Also check meta tag
+            match = re.search(r'<meta name="csrf-token" content="([^"]+)">', html)
+            if match:
+                return match.group(1)
+                
+            print("Could not find CSRF token")
+            return None
+    except urllib.error.URLError as e:
+        print(f"Error accessing {url}: {e}")
         return None
-    
-    # Extract CSRF token using regex
-    match = re.search(r'<input type="hidden" name="csrf_token" value="([^"]+)">', response.text)
-    if match:
-        return match.group(1)
-    
-    # Also check meta tag
-    match = re.search(r'<meta name="csrf-token" content="([^"]+)">', response.text)
-    if match:
-        return match.group(1)
-        
-    print("Could not find CSRF token")
-    return None
 
 def verify_login():
     print("1. Getting CSRF token from login page...")
@@ -38,19 +49,20 @@ def verify_login():
     print(f"   CSRF Token: {csrf_token[:10]}...")
     
     print("2. Attempting login as admin...")
-    # Assuming admin user exists from previous setup or tests
-    # If not, we might need to create one or use the one created in tests if DB persisted
-    # Let's try the default admin credentials if they exist, or the ones from verify_db.py if applicable
-    # Actually, verify_db.py didn't create users.
-    # But I can check if any user exists or register one.
-    
+    # Using default admin credentials or a test user
     # Let's try to register a temporary user first to be sure
     print("   (Registering temp user for verification)")
     register_url = f"{BASE_URL}/auth/register"
-    register_data = {
-        'csrf_token': csrf_token,
+    
+    # We need to get CSRF from register page to be safe, though session cookie should handle it
+    # But let's just use the one we have if it works, or fetch fresh.
+    # Fetching fresh is safer.
+    csrf_token_reg = get_csrf_token(register_url)
+    
+    register_data = urllib.parse.urlencode({
+        'csrf_token': csrf_token_reg,
         'full_name': 'Verify User',
-        'email': 'verify@test.com',
+        'email': 'verify_urllib@test.com',
         'password': 'password123',
         'confirm_password': 'password123',
         'role': 'patient',
@@ -59,56 +71,54 @@ def verify_login():
         'gender': 'Other',
         'address': 'Test Address',
         'blood_group': 'O+'
-    }
+    }).encode('utf-8')
     
-    # We need a fresh CSRF for register page potentially? 
-    # Usually the token is per session, but let's just use the one we got.
-    # Better to get it from register page.
-    csrf_token_reg = get_csrf_token(register_url)
-    register_data['csrf_token'] = csrf_token_reg
-    
-    reg_response = session.post(register_url, data=register_data)
-    
-    # If registration succeeds, it usually redirects to login or dashboard
-    if reg_response.status_code == 200 and "Registration successful" in reg_response.text:
-        print("   Registration successful (or at least page loaded with success message)")
-    elif reg_response.status_code == 302:
-        print("   Registration redirected (likely success)")
-    else:
-        # It might fail if user already exists, which is fine, we proceed to login
-        print(f"   Registration response: {reg_response.status_code}")
+    try:
+        req = urllib.request.Request(register_url, data=register_data)
+        with urllib.request.urlopen(req) as reg_response:
+            # If registration succeeds, it usually redirects to login or dashboard
+            # urllib follows redirects automatically by default
+            print(f"   Registration response URL: {reg_response.geturl()}")
+            if "login" in reg_response.geturl() or "dashboard" in reg_response.geturl():
+                 print("   Registration successful (redirected)")
+            else:
+                 print("   Registration completed (check if successful)")
+    except urllib.error.HTTPError as e:
+        print(f"   Registration failed: {e}")
 
     print("3. Logging in...")
-    login_data = {
-        'csrf_token': csrf_token, # Use the one from login page
-        'email': 'verify@test.com',
+    # Refresh CSRF from login page
+    csrf_token = get_csrf_token(login_url)
+    
+    login_data = urllib.parse.urlencode({
+        'csrf_token': csrf_token,
+        'email': 'verify_urllib@test.com',
         'password': 'password123'
-    }
+    }).encode('utf-8')
     
-    # Refresh CSRF from login page just in case
-    login_data['csrf_token'] = get_csrf_token(login_url)
-    
-    login_response = session.post(login_url, data=login_data)
-    
-    if login_response.status_code == 200 and "Invalid email or password" in login_response.text:
-        print("   Login failed: Invalid credentials")
-        return False
-    elif login_response.status_code == 302:
-        print("   Login redirected (Success!)")
-        # Follow redirect
-        dashboard_response = session.get(f"{BASE_URL}/patient/dashboard")
-        if dashboard_response.status_code == 200:
-            print("   Accessed Patient Dashboard successfully")
-            return True
-        else:
-            print(f"   Failed to access dashboard: {dashboard_response.status_code}")
-            return False
-    else:
-        print(f"   Login response: {login_response.status_code}")
-        # Check if we are on dashboard
-        if "Dashboard" in login_response.text:
-             print("   Login successful (landed on dashboard)")
-             return True
+    try:
+        req = urllib.request.Request(login_url, data=login_data)
+        with urllib.request.urlopen(req) as login_response:
+            final_url = login_response.geturl()
+            print(f"   Login final URL: {final_url}")
+            
+            if "dashboard" in final_url:
+                print("   Accessed Dashboard successfully")
+                return True
+            elif "login" in final_url:
+                # Check for error message in content
+                content = login_response.read().decode('utf-8')
+                if "Invalid email or password" in content:
+                    print("   Login failed: Invalid credentials")
+                else:
+                    print("   Login failed: Remained on login page")
+                return False
+            else:
+                print(f"   Login redirected to unexpected URL: {final_url}")
+                return False
+                
+    except urllib.error.HTTPError as e:
+        print(f"   Login request failed: {e}")
         return False
 
 if __name__ == "__main__":
