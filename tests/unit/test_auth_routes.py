@@ -48,8 +48,9 @@ class TestLoginRoute:
         response = client.post('/auth/login', data={
             'email': 'inactive@test.com',
             'password': 'pass123'
-        })
+        }, follow_redirects=True)
         assert response.status_code == 200
+        assert b'Your account is inactive' in response.data
     
     def test_login_redirects_authenticated_user(self, authenticated_patient):
         """Test that authenticated users are redirected from login."""
@@ -90,8 +91,9 @@ class TestRegisterRoute:
             'email': 'patient@test.com',  # Already exists
             'password': 'pass123',
             'full_name': 'Duplicate User'
-        })
+        }, follow_redirects=True)
         assert response.status_code == 200
+        assert b'Email already registered' in response.data
     
     def test_register_redirects_authenticated_user(self, authenticated_patient):
         """Test that authenticated users are redirected from register."""

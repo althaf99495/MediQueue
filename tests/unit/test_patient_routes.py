@@ -74,8 +74,9 @@ class TestBookAppointment:
             'doctor_id': doctor_user.id,
             'appointment_date': past_date,
             'slot_time': '10:00'
-        })
+        }, follow_redirects=True)
         assert response.status_code == 200
+        assert b'Cannot book an appointment in the past' in response.data
     
     def test_book_appointment_invalid_doctor(self, authenticated_patient):
         """Test booking with invalid doctor ID."""
@@ -84,6 +85,7 @@ class TestBookAppointment:
             'doctor_id': 99999,  # Non-existent doctor
             'appointment_date': future_date,
             'slot_time': '10:00'
-        })
+        }, follow_redirects=True)
         assert response.status_code == 200
+        assert b'Invalid doctor selected' in response.data
 

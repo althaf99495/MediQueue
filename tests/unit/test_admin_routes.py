@@ -34,7 +34,7 @@ class TestAdminDepartments:
     
     def test_create_department(self, authenticated_admin):
         """Test creating a department."""
-        response = authenticated_admin.post('/admin/departments', data={
+        response = authenticated_admin.post('/admin/departments/add', data={
             'name': 'Test Department',
             'description': 'Test Description'
         }, follow_redirects=True)

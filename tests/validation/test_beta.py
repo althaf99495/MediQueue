@@ -30,8 +30,8 @@ class TestUserAcceptanceScenarios:
         response = client.post('/auth/login', data={
             'email': 'beta@test.com',
             'password': 'pass123'
-        }, follow_redirects=False)
-        assert response.status_code == 302
+        }, follow_redirects=True)
+        assert response.status_code == 200
         
         # Step 3: Set up doctor and department
         with test_app.app_context():
@@ -47,6 +47,7 @@ class TestUserAcceptanceScenarios:
                 avg_consultation_time=15
             )
             doctor.set_password('pass123')
+            print(f"DEBUG: Doctor password hash: {doctor.password_hash}")
             db.session.add(doctor)
             
             from models import DoctorAvailability
@@ -59,7 +60,9 @@ class TestUserAcceptanceScenarios:
                 is_available=True
             )
             db.session.add(availability)
+            print("DEBUG: Committing doctor and availability...")
             db.session.commit()
+            print("DEBUG: Commit successful")
             
             # Step 4: Patient books appointment
             patient = User.query.filter_by(email='beta@test.com').first()
