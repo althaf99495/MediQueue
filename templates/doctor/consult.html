@@ -26,29 +26,74 @@
             </div>
         </div>
 
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="alert alert-info mb-4">
+                <i class="bi bi-info-circle"></i> <strong>Add Prescription Details and Medical Reports</strong><br>
+                Fill in the consultation details below. You can add prescription medications and upload medical reports for this patient.
+            </div>
+
+            <h5 class="mb-3">Consultation Details</h5>
             <div class="mb-3">
                 <label for="symptoms" class="form-label">Symptoms *</label>
-                <textarea class="form-control" id="symptoms" name="symptoms" rows="3" required></textarea>
+                <textarea class="form-control" id="symptoms" name="symptoms" rows="3" required placeholder="Enter patient symptoms..."></textarea>
             </div>
             
             <div class="mb-3">
                 <label for="diagnosis" class="form-label">Diagnosis *</label>
-                <textarea class="form-control" id="diagnosis" name="diagnosis" rows="3" required></textarea>
+                <textarea class="form-control" id="diagnosis" name="diagnosis" rows="3" required placeholder="Enter diagnosis..."></textarea>
             </div>
             
             <div class="mb-3">
                 <label for="notes" class="form-label">Additional Notes</label>
-                <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="Any additional notes or observations..."></textarea>
             </div>
 
-            <hr>
+            <hr class="my-4">
 
-            <h5 class="mt-4 mb-3">Prescription</h5>
+            <h5 class="mt-4 mb-3">
+                <i class="bi bi-file-earmark-medical"></i> Medical Reports
+            </h5>
+            <div class="mb-3">
+                <label for="report" class="form-label">Upload Medical Report</label>
+                <input class="form-control" type="file" id="report" name="report" accept=".pdf,.png,.jpg,.jpeg">
+                <small class="form-text text-muted">Supported formats: PDF, PNG, JPG, JPEG (Max 16MB)</small>
+            </div>
+
+            <hr class="my-4">
+
+            <h5 class="mt-4 mb-3">
+                <i class="bi bi-prescription"></i> Prescription Details
+            </h5>
+            <div class="alert alert-light mb-3">
+                <i class="bi bi-lightbulb"></i> Add medications and dosage instructions for the patient. You can add multiple medications.
+            </div>
             
             <div class="mb-3">
-                <label for="medications" class="form-label">Medications</label>
-                <textarea class="form-control" id="medications" name="medications" rows="4" placeholder="List medications, dosage, and frequency"></textarea>
+                <label class="form-label">Medications</label>
+                <div id="medicationsContainer">
+                    <div class="medication-item mb-2 p-3 border rounded">
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control form-control-sm medication-name" placeholder="Medication name" required>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control form-control-sm medication-dosage" placeholder="Dosage (e.g., 500mg)" required>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control form-control-sm medication-frequency" placeholder="Frequency (e.g., Twice daily)" required>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-sm btn-danger remove-medication" onclick="removeMedication(this)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addMedication()">
+                    <i class="bi bi-plus-circle"></i> Add Medication
+                </button>
+                <input type="hidden" id="medications" name="medications" value="[]">
             </div>
             
             <div class="mb-3">
@@ -60,9 +105,87 @@
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-check-circle"></i> Complete Consultation
                 </button>
+                <button type="submit" name="send_to_patient" value="true" class="btn btn-info">
+                    <i class="bi bi-send"></i> Send to Patient
+                </button>
                 <a href="{{ url_for('doctor.dashboard') }}" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+let medicationCount = 1;
+
+function addMedication() {
+    const container = document.getElementById('medicationsContainer');
+    const newItem = document.createElement('div');
+    newItem.className = 'medication-item mb-2 p-3 border rounded';
+    newItem.innerHTML = `
+        <div class="row g-2">
+            <div class="col-md-4">
+                <input type="text" class="form-control form-control-sm medication-name" placeholder="Medication name" required>
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control form-control-sm medication-dosage" placeholder="Dosage (e.g., 500mg)" required>
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control form-control-sm medication-frequency" placeholder="Frequency (e.g., Twice daily)" required>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-sm btn-danger remove-medication" onclick="removeMedication(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    container.appendChild(newItem);
+    medicationCount++;
+    updateMedicationsJSON();
+}
+
+function removeMedication(button) {
+    if (document.querySelectorAll('.medication-item').length > 1) {
+        button.closest('.medication-item').remove();
+        updateMedicationsJSON();
+    } else {
+        alert('At least one medication is required. Clear the fields instead.');
+    }
+}
+
+function updateMedicationsJSON() {
+    const medications = [];
+    document.querySelectorAll('.medication-item').forEach(item => {
+        const name = item.querySelector('.medication-name').value.trim();
+        const dosage = item.querySelector('.medication-dosage').value.trim();
+        const frequency = item.querySelector('.medication-frequency').value.trim();
+        
+        if (name && dosage && frequency) {
+            medications.push({
+                medication: name,
+                dosage: dosage,
+                frequency: frequency
+            });
+        }
+    });
+    
+    document.getElementById('medications').value = JSON.stringify(medications);
+}
+
+// Update JSON when form fields change
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('medicationsContainer');
+    if (container) {
+        container.addEventListener('input', updateMedicationsJSON);
+        
+        // Update JSON before form submission
+        const form = container.closest('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                updateMedicationsJSON();
+            });
+        }
+    }
+});
+</script>
 {% endblock %}

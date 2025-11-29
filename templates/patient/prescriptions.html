@@ -1,48 +1,121 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
 
-{% block content %}
-<div class="container mt-4">
-    <div class="card p-4">
-        <h2 class="mb-4">My Prescriptions</h2>
-        
-        {% if prescriptions %}
-            <div class="row">
-                {% for prescription in prescriptions %}
-                <div class="col-md-6 mb-3">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title mb-0">{{ prescription.created_at.strftime('%B %d, %Y') }}</h5>
-                                <span class="badge bg-success">Valid</span>
-                            </div>
-                            <p class="text-muted mb-2">Dr. {{ prescription.doctor.full_name }}</p>
-                            
-                            <div class="mb-2">
-                                <strong>Medications:</strong>
-                                <p class="mb-0">{{ prescription.medications }}</p>
-                            </div>
-                            
-                            {% if prescription.instructions %}
-                            <div class="mb-2">
-                                <strong>Instructions:</strong>
-                                <p class="mb-0">{{ prescription.instructions }}</p>
-                            </div>
-                            {% endif %}
+{% block header_title %}Prescriptions{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h2 class="text-lg font-medium text-slate-900 dark:text-white">My Prescriptions</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400">View and download your medical prescriptions.</p>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="rounded-xl bg-white p-4 shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+        <form method="GET" action="{{ url_for('patient.prescriptions') }}" class="space-y-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                <div class="md:col-span-2">
+                    <label for="search" class="sr-only">Search</label>
+                    <div class="relative">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
                         </div>
+                        <input type="text" name="search" id="search"
+                            class="block w-full rounded-lg border border-slate-300 bg-slate-50 py-2 pl-10 pr-3 text-sm placeholder-slate-500 focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-400"
+                            placeholder="Search doctor, instructions..." value="{{ search or '' }}">
                     </div>
                 </div>
-                {% endfor %}
+                <div>
+                    <label for="date_from" class="sr-only">From Date</label>
+                    <input type="date" name="date_from" id="date_from"
+                        class="block w-full rounded-lg border border-slate-300 bg-slate-50 py-2 px-3 text-sm text-slate-900 focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                        placeholder="From date" value="{{ date_from or '' }}">
+                </div>
+                <div>
+                    <label for="date_to" class="sr-only">To Date</label>
+                    <input type="date" name="date_to" id="date_to"
+                        class="block w-full rounded-lg border border-slate-300 bg-slate-50 py-2 px-3 text-sm text-slate-900 focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                        placeholder="To date" value="{{ date_to or '' }}">
+                </div>
             </div>
-        {% else %}
-            <div class="text-center py-5 text-muted">
-                <i class="bi bi-file-medical" style="font-size: 3rem;"></i>
-                <p class="mt-3">No prescriptions found</p>
+            <div class="flex items-center justify-between">
+                <button type="submit"
+                    class="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
+                    Apply Filters
+                </button>
+                {% if search or date_from or date_to %}
+                <a href="{{ url_for('patient.prescriptions') }}"
+                    class="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200">
+                    Clear Filters
+                </a>
+                {% endif %}
             </div>
-        {% endif %}
+        </form>
+    </div>
 
-        <div class="mt-3">
-            <a href="{{ url_for('patient.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+    <!-- Prescriptions Grid -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {% for prescription in prescriptions %}
+        <div
+            class="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm transition-all hover:shadow-md dark:bg-slate-900 dark:border dark:border-slate-800">
+            <div class="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/50">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-base font-semibold text-slate-900 dark:text-white">
+                        {{ prescription.created_at.strftime('%B %d, %Y') }}
+                    </h3>
+                    <span
+                        class="inline-flex rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                        Valid
+                    </span>
+                </div>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    Dr. {{ prescription.doctor.full_name }}
+                </p>
+            </div>
+            <div class="flex-grow px-6 py-4">
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Medications</h4>
+                        <p class="mt-1 text-sm text-slate-900 dark:text-white whitespace-pre-line">{{
+                            prescription.medications }}</p>
+                    </div>
+                    {% if prescription.instructions %}
+                    <div>
+                        <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Instructions</h4>
+                        <p class="mt-1 text-sm text-slate-900 dark:text-white whitespace-pre-line">{{
+                            prescription.instructions }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="bg-slate-50 px-6 py-4 dark:bg-slate-800/50">
+                <a href="{{ url_for('patient.download_prescription', prescription_id=prescription.id) }}"
+                    class="flex w-full items-center justify-center rounded-lg border border-transparent bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
+                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download PDF
+                </a>
+            </div>
         </div>
+        {% else %}
+        <div class="col-span-full flex flex-col items-center justify-center py-12 text-center">
+            <div class="rounded-full bg-slate-100 p-4 dark:bg-slate-800">
+                <svg class="h-10 w-10 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+            <h3 class="mt-4 text-lg font-medium text-slate-900 dark:text-white">No prescriptions found</h3>
+            <p class="mt-2 text-slate-500 dark:text-slate-400">You don't have any prescriptions yet.</p>
+        </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}

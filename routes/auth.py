@@ -3,47 +3,55 @@ from flask_login import login_user, logout_user, login_required, current_user
 from models import db, User
 from werkzeug.security import generate_password_hash
 
-auth_bp = Blueprint('auth', __name__)
+auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    print(f"DEBUG: Login route accessed. Method: {request.method}")
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
     
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
+        print(f"DEBUG: Login attempt for email: {email}")
         
         user = User.query.filter_by(email=email).first()
+        print(f"DEBUG: User found: {user}")
         
-        if user and user.check_password(password):
-            if not user.is_active:
-                flash('Your account is inactive. Please contact administration.', 'danger')
-                return redirect(url_for('auth.login'))
-            
-            login_user(user, remember=True)
-            next_page = request.args.get('next')
-            
-            if not next_page:
-                if user.is_admin():
-                    next_page = url_for('admin.dashboard')
-                elif user.is_doctor():
-                    next_page = url_for('doctor.dashboard')
-                elif user.is_patient():
-                    next_page = url_for('patient.dashboard')
-                else:
-                    next_page = url_for('index')
-            
-            return redirect(next_page)
-        else:
-            flash('Invalid email or password.', 'danger')
+        if user:
+            print(f"DEBUG: Password check: {user.check_password(password)}")
+            if user.check_password(password):
+                if not user.is_active:
+                    flash('Your account is inactive. Please contact administration.', 'danger')
+                    return redirect(url_for('auth.login'))
+                
+                login_user(user, remember=True)
+                print(f"DEBUG: User logged in. Redirecting...")
+                next_page = request.args.get('next')
+                
+                if not next_page:
+                    if user.is_admin():
+                        next_page = url_for('admin.dashboard')
+                    elif user.is_doctor():
+                        next_page = url_for('doctor.dashboard')
+                    elif user.is_patient():
+                        next_page = url_for('patient.dashboard')
+                    else:
+                        next_page = url_for('main.index')
+                
+                print(f"DEBUG: Redirecting to {next_page}")
+                return redirect(next_page)
+        
+        print("DEBUG: Login failed")
+        flash('Invalid email or password.', 'danger')
     
     return render_template('auth/login.html')
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
     
     if request.method == 'POST':
         email = request.form.get('email')
@@ -86,4 +94,4 @@ def register():
 def logout():
     logout_user()
     flash('You have been logged out successfully.', 'info')
-    return redirect(url_for('index'))
+    return redirect(url_for('main.index'))

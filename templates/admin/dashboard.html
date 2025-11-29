@@ -1,95 +1,173 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
 
-{% block content %}
-<div class="container mt-4">
-    <div class="dashboard-header">
-        <h2>Admin Dashboard</h2>
-        <p class="text-muted mb-0">System Overview and Management</p>
-    </div>
+{% block header_title %}Admin Dashboard{% endblock %}
 
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="stat-card stat-card-primary">
-                <i class="bi bi-people-fill" style="font-size: 2rem;"></i>
-                <h3 class="mt-2">{{ total_doctors }}</h3>
-                <p>Active Doctors</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card stat-card-success">
-                <i class="bi bi-person-fill" style="font-size: 2rem;"></i>
-                <h3 class="mt-2">{{ total_patients }}</h3>
-                <p>Registered Patients</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card stat-card-warning">
-                <i class="bi bi-building" style="font-size: 2rem;"></i>
-                <h3 class="mt-2">{{ total_departments }}</h3>
-                <p>Departments</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card stat-card-danger">
-                <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
-                <h3 class="mt-2">{{ patients_served_today }}</h3>
-                <p>Served Today</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-lg-6">
-            <div class="card p-4 mb-4">
-                <h4 class="mb-3">Active Queues</h4>
-                {% if active_queues %}
-                    {% for queue in active_queues %}
-                    <div class="mb-2 p-2 bg-light rounded d-flex justify-content-between">
-                        <strong>Dr. {{ queue[0] }}</strong>
-                        <span class="badge bg-primary">{{ queue[1] }} patients</span>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="text-muted">No active queues</p>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="col-lg-6">
-            <div class="card p-4 mb-4">
-                <h4 class="mb-3">Recent Appointments</h4>
-                {% if recent_appointments %}
-                    {% for apt in recent_appointments[:5] %}
-                    <div class="mb-2 p-2 bg-light rounded small">
-                        <strong>{{ apt.patient.full_name }}</strong> → Dr. {{ apt.doctor.full_name }}
-                        <br><span class="text-muted">{{ apt.appointment_date.strftime('%B %d, %I:%M %p') }}</span>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="text-muted">No recent appointments</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12">
-            <div class="card p-4">
-                <h4 class="mb-3">Quick Actions</h4>
-                <div class="d-flex gap-3 flex-wrap">
-                    <a href="{{ url_for('admin.manage_doctors') }}" class="btn btn-primary">
-                        <i class="bi bi-person-plus"></i> Manage Doctors
-                    </a>
-                    <a href="{{ url_for('admin.manage_departments') }}" class="btn btn-info">
-                        <i class="bi bi-building"></i> Manage Departments
-                    </a>
-                    <a href="{{ url_for('admin.manage_patients') }}" class="btn btn-success">
-                        <i class="bi bi-people"></i> View Patients
-                    </a>
-                    <a href="{{ url_for('admin.analytics') }}" class="btn btn-warning">
-                        <i class="bi bi-bar-chart"></i> Analytics
-                    </a>
+{% block dashboard_content %}
+<div class="space-y-6">
+    <!-- Stats Grid -->
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <!-- Active Doctors -->
+        <div
+            class="rounded-2xl bg-white p-6 shadow-sm transition-all hover:shadow-md dark:bg-slate-900 dark:border dark:border-slate-800">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Active Doctors</p>
+                    <h3 class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{{ total_doctors }}</h3>
                 </div>
+                <div class="rounded-lg bg-teal-50 p-3 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patients -->
+        <div
+            class="rounded-2xl bg-white p-6 shadow-sm transition-all hover:shadow-md dark:bg-slate-900 dark:border dark:border-slate-800">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Patients</p>
+                    <h3 class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{{ total_patients }}</h3>
+                </div>
+                <div class="rounded-lg bg-sky-50 p-3 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Departments -->
+        <div
+            class="rounded-2xl bg-white p-6 shadow-sm transition-all hover:shadow-md dark:bg-slate-900 dark:border dark:border-slate-800">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Departments</p>
+                    <h3 class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{{ total_departments }}</h3>
+                </div>
+                <div class="rounded-lg bg-amber-50 p-3 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Served Today -->
+        <div
+            class="rounded-2xl bg-white p-6 shadow-sm transition-all hover:shadow-md dark:bg-slate-900 dark:border dark:border-slate-800">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Served Today</p>
+                    <h3 class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{{ patients_served_today }}</h3>
+                </div>
+                <div class="rounded-lg bg-rose-50 p-3 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-3">
+        <!-- Active Queues -->
+        <div
+            class="lg:col-span-2 rounded-2xl bg-white p-6 shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+            <div class="mb-6 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Active Queues</h3>
+                <button
+                    class="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">View
+                    All</button>
+            </div>
+
+            <!-- Overflow container for mobile table-like safety -->
+            <div class="overflow-x-auto">
+                {% if active_queues %}
+                <div class="space-y-3 min-w-[500px] sm:min-w-0">
+                    {% for queue in active_queues %}
+                    <div
+                        class="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-white text-teal-600 shadow-sm dark:bg-slate-800 dark:text-teal-400">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-900 dark:text-white">Dr. {{ queue.full_name }}</h4>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">{{ queue.department }}</p>
+                            </div>
+                        </div>
+                        <span
+                            class="rounded-full bg-teal-100 px-3 py-1 text-sm font-medium text-teal-800 dark:bg-teal-900/50 dark:text-teal-300">{{
+                            queue.queue_length }} Waiting</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="py-12 text-center">
+                    <svg class="mx-auto h-12 w-12 text-slate-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                    </svg>
+                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">No active queues right now</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="rounded-2xl bg-white p-6 shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+            <h3 class="mb-6 text-lg font-bold text-slate-900 dark:text-white">Quick Actions</h3>
+            <div class="space-y-3">
+                <a href="{{ url_for('admin.manage_doctors') }}"
+                    class="flex items-center justify-between rounded-xl bg-teal-50 p-4 text-teal-900 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-100 dark:hover:bg-teal-900/30">
+                    <div class="flex items-center gap-3">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                        </svg>
+                        <span class="font-medium">Add Doctor</span>
+                    </div>
+                    <svg class="h-4 w-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
+                <a href="{{ url_for('admin.manage_departments') }}"
+                    class="flex items-center justify-between rounded-xl bg-slate-50 p-4 text-slate-900 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">
+                    <div class="flex items-center gap-3">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        <span class="font-medium">Departments</span>
+                    </div>
+                    <svg class="h-4 w-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
+                <a href="{{ url_for('admin.manage_patients') }}"
+                    class="flex items-center justify-between rounded-xl bg-slate-50 p-4 text-slate-900 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">
+                    <div class="flex items-center gap-3">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        <span class="font-medium">Patients</span>
+                    </div>
+                    <svg class="h-4 w-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
             </div>
         </div>
     </div>

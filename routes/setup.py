@@ -9,7 +9,7 @@ def setup():
     
     if admin_count > 0:
         flash('Admin account already exists. Please contact an existing administrator.', 'warning')
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
     
     if request.method == 'POST':
         email = request.form.get('email')

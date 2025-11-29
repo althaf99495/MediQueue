@@ -1,27 +1,74 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="card p-4 text-center">
-        <h2 class="mb-4">QR Code Check-in</h2>
-        
-        <p class="text-muted mb-4">Show this QR code at the hospital kiosk to check in for your appointment</p>
-        
-        <div class="d-flex justify-content-center mb-4">
-            <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code" class="img-fluid" style="max-width: 300px;">
+<div class="container mx-auto px-4 py-12 max-w-lg">
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden dark:bg-slate-900 dark:border dark:border-slate-800">
+        <!-- Ticket Header -->
+        <div class="bg-teal-600 px-6 py-8 text-center">
+            <h2 class="text-2xl font-bold text-white">Digital Check-in Pass</h2>
+            <p class="mt-2 text-teal-100">Scan this at the hospital kiosk</p>
         </div>
-        
-        <div class="card bg-light p-3 mb-4">
-            <p class="mb-1"><strong>Name:</strong> {{ current_user.full_name }}</p>
-            <p class="mb-1"><strong>Email:</strong> {{ current_user.email }}</p>
-            <p class="mb-0"><strong>Patient ID:</strong> {{ current_user.id }}</p>
+
+        <!-- Ticket Body -->
+        <div class="p-8">
+            <!-- QR Code -->
+            <div class="flex justify-center mb-8">
+                <div
+                    class="p-4 bg-white rounded-xl shadow-sm border border-slate-100 dark:bg-slate-800 dark:border-slate-700">
+                    <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code" class="w-48 h-48 object-contain">
+                </div>
+            </div>
+
+            <!-- Patient Details -->
+            <div class="space-y-4 border-t border-slate-100 pt-6 dark:border-slate-800">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Patient Name</span>
+                    <span class="text-base font-bold text-slate-900 dark:text-white text-right">{{
+                        current_user.full_name }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Patient ID</span>
+                    <span
+                        class="font-mono text-sm bg-slate-100 px-2 py-1 rounded text-slate-600 dark:bg-slate-800 dark:text-slate-300">#{{
+                        current_user.id }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Email</span>
+                    <span class="text-sm text-slate-900 dark:text-white text-right">{{ current_user.email }}</span>
+                </div>
+            </div>
+
+            <!-- Info Alert -->
+            <div class="mt-8 rounded-lg bg-sky-50 p-4 dark:bg-sky-900/20">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-sky-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-sky-700 dark:text-sky-300">
+                            This QR code is unique to you and can be used for all future check-ins.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action -->
+            <div class="mt-8">
+                <a href="{{ url_for('patient.dashboard') }}"
+                    class="flex w-full justify-center items-center rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700">
+                    <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Back to Dashboard
+                </a>
+            </div>
         </div>
-        
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> This QR code is unique to you and can be used for all check-ins
-        </div>
-        
-        <a href="{{ url_for('patient.dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
     </div>
 </div>
 {% endblock %}

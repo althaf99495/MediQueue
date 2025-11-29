@@ -1,119 +1,197 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
+
+{% block header_title %}Analytics Dashboard{% endblock %}
 
 {% block extra_css %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
-{% block content %}
-<div class="container mt-4">
-    <div class="card p-4 mb-4">
-        <h2 class="mb-4">Analytics Dashboard</h2>
-        
-        <div class="row">
-            <div class="col-lg-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Daily Patient Statistics (Last 7 Days)</h5>
-                        <canvas id="dailyStatsChart"></canvas>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-lg-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Patients Served by Doctor (Today)</h5>
-                        <canvas id="doctorStatsChart"></canvas>
-                    </div>
-                </div>
+{% block dashboard_content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h2 class="text-lg font-medium text-slate-900 dark:text-white">Hospital Analytics</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Overview of patient flow and doctor performance.</p>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Daily Stats Chart -->
+        <div class="rounded-xl bg-white p-6 shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+            <h3 class="mb-4 text-base font-semibold text-slate-900 dark:text-white">Daily Patient Statistics (Last 7
+                Days)</h3>
+            <div class="relative h-64 w-full">
+                <canvas id="dailyStatsChart"></canvas>
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Detailed Statistics</h5>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Patients Served</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for stat in daily_stats %}
-                                    <tr>
-                                        <td>{{ stat[0] }}</td>
-                                        <td>{{ stat[1] }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+        <!-- Doctor Stats Chart -->
+        <div class="rounded-xl bg-white p-6 shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+            <h3 class="mb-4 text-base font-semibold text-slate-900 dark:text-white">Patients Served by Doctor (Today)
+            </h3>
+            <div class="relative h-64 w-full">
+                <canvas id="doctorStatsChart"></canvas>
             </div>
+        </div>
+    </div>
+
+    <!-- Detailed Stats Table -->
+    <div class="rounded-xl bg-white shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+        <div class="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+            <h3 class="text-base font-semibold text-slate-900 dark:text-white">Detailed Statistics</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                <thead class="bg-slate-50 dark:bg-slate-800/50">
+                    <tr>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Date</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Patients Served</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
+                    {% for stat in daily_stats %}
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-900 dark:text-white">
+                            {{ stat.date }}
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
+                            {{ stat.count }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="2" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                            No data available.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
 <script>
-const dailyData = {
-    labels: [{% for stat in daily_stats %}'{{ stat[0] }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+    // Chart.js global defaults for dark mode support
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.borderColor = '#e2e8f0';
+
+    if (document.documentElement.classList.contains('dark')) {
+        Chart.defaults.borderColor = '#1e293b';
+    }
+
+    const dailyData = {
+        labels: [{% for stat in daily_stats %}'{{ stat.date }}'{% if not loop.last %}, {% endif %} {% endfor %}],
     datasets: [{
         label: 'Patients Served',
-        data: [{% for stat in daily_stats %}{{ stat[1] }}{% if not loop.last %}, {% endif %}{% endfor %}],
-        backgroundColor: 'rgba(20, 169, 197, 0.5)',
-        borderColor: 'rgba(20, 169, 197, 1)',
-        borderWidth: 2,
-        tension: 0.3
+        data: [{% for stat in daily_stats %}{{ stat.count }} {% if not loop.last %}, {% endif %} {% endfor %}],
+    backgroundColor: 'rgba(20, 184, 166, 0.2)', // Teal-500 with opacity
+        borderColor: '#14b8a6', // Teal-500
+            borderWidth: 2,
+                tension: 0.4,
+                    fill: true,
+                        pointBackgroundColor: '#fff',
+                            pointBorderColor: '#14b8a6',
+                                pointHoverBackgroundColor: '#14b8a6',
+                                    pointHoverBorderColor: '#fff'
     }]
 };
 
-const doctorData = {
-    labels: [{% for stat in doctor_stats %}'{{ stat[0] }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+    const doctorData = {
+        labels: [{% for stat in doctor_stats %}'{{ stat.full_name }}'{% if not loop.last %}, {% endif %} {% endfor %}],
     datasets: [{
         label: 'Patients Served',
-        data: [{% for stat in doctor_stats %}{{ stat[1] }}{% if not loop.last %}, {% endif %}{% endfor %}],
-        backgroundColor: [
-            'rgba(20, 169, 197, 0.7)',
-            'rgba(80, 197, 200, 0.7)',
-            'rgba(91, 200, 175, 0.7)',
-            'rgba(245, 197, 99, 0.7)',
-            'rgba(243, 156, 156, 0.7)'
-        ],
-        borderWidth: 1
+        data: [{% for stat in doctor_stats %}{{ stat.patients_served }} {% if not loop.last %}, {% endif %} {% endfor %}],
+    backgroundColor: [
+        'rgba(20, 184, 166, 0.8)', // Teal
+        'rgba(16, 185, 129, 0.8)', // Emerald
+        'rgba(14, 165, 233, 0.8)', // Sky
+        'rgba(99, 102, 241, 0.8)', // Indigo
+        'rgba(139, 92, 246, 0.8)'  // Violet
+    ],
+        borderRadius: 6,
+            borderWidth: 0
     }]
 };
 
-const dailyChart = new Chart(document.getElementById('dailyStatsChart'), {
-    type: 'line',
-    data: dailyData,
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { display: true }
-        },
-        scales: {
-            y: { beginAtZero: true }
+    const dailyChart = new Chart(document.getElementById('dailyStatsChart'), {
+        type: 'line',
+        data: dailyData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    padding: 12,
+                    titleFont: { size: 13 },
+                    bodyFont: { size: 13 },
+                    cornerRadius: 8,
+                    displayColors: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        borderDash: [2, 2],
+                        drawBorder: false,
+                    },
+                    ticks: {
+                        padding: 10
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        padding: 10
+                    }
+                }
+            }
         }
-    }
-});
+    });
 
-const doctorChart = new Chart(document.getElementById('doctorStatsChart'), {
-    type: 'bar',
-    data: doctorData,
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { display: false }
-        },
-        scales: {
-            y: { beginAtZero: true }
+    const doctorChart = new Chart(document.getElementById('doctorStatsChart'), {
+        type: 'bar',
+        data: doctorData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    padding: 12,
+                    cornerRadius: 8,
+                    displayColors: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        borderDash: [2, 2],
+                        drawBorder: false,
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    }
+                }
+            }
         }
-    }
-});
+    });
 </script>
 {% endblock %}

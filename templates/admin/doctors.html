@@ -1,49 +1,178 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
 
-{% block content %}
-<div class="container mt-4">
-    <div class="card p-4 mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2>Manage Doctors</h2>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDoctorModal">
-                <i class="bi bi-plus-circle"></i> Add New Doctor
+{% block header_title %}Manage Doctors{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <!-- Header Actions -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h2 class="text-lg font-medium text-slate-900 dark:text-white">Doctors Directory</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Manage doctor accounts, schedules, and details.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <!-- Export Dropdown (Simplified as buttons for now) -->
+            <div class="flex rounded-md shadow-sm">
+                <a href="{{ url_for('admin.export_doctors') }}"
+                    class="relative inline-flex items-center rounded-l-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:z-10 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                    CSV
+                </a>
+                <a href="{{ url_for('admin.export_doctors_pdf') }}"
+                    class="relative -ml-px inline-flex items-center rounded-r-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:z-10 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                    PDF
+                </a>
+            </div>
+
+            {% if not show_inactive %}
+            <a href="{{ url_for('admin.manage_doctors', show_inactive='true') }}"
+                class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                Show Inactive
+            </a>
+            {% else %}
+            <a href="{{ url_for('admin.manage_doctors') }}"
+                class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                Hide Inactive
+            </a>
+            {% endif %}
+
+            <button onclick="openModal('addDoctorModal')"
+                class="inline-flex items-center justify-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
+                <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Add Doctor
             </button>
         </div>
+    </div>
 
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-light">
+    <!-- Search -->
+    <div class="rounded-xl bg-white p-4 shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+        <form method="GET" action="{{ url_for('admin.manage_doctors') }}" class="flex gap-4">
+            {% if show_inactive %}
+            <input type="hidden" name="show_inactive" value="true">
+            {% endif %}
+            <div class="relative flex-grow">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input type="text" name="search"
+                    class="block w-full rounded-lg border border-slate-300 bg-slate-50 py-2 pl-10 pr-3 text-sm placeholder-slate-500 focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-400"
+                    placeholder="Search by name, email, or specialization..." value="{{ search or '' }}">
+            </div>
+            <button type="submit"
+                class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 dark:bg-slate-700 dark:hover:bg-slate-600">
+                Search
+            </button>
+            {% if search %}
+            <a href="{{ url_for('admin.manage_doctors', show_inactive=('true' if show_inactive else 'false')) }}"
+                class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                Clear
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                <thead class="bg-slate-50 dark:bg-slate-800/50">
                     <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Department</th>
-                        <th>Specialization</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Doctor</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Contact</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Department</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Specialization</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Status</th>
+                        <th scope="col" class="relative px-6 py-3">
+                            <span class="sr-only">Actions</span>
+                        </th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
                     {% for doctor in doctors %}
-                    <tr>
-                        <td>Dr. {{ doctor.full_name }}</td>
-                        <td>{{ doctor.email }}</td>
-                        <td>{{ doctor.phone or 'N/A' }}</td>
-                        <td>{{ doctor.department.name if doctor.department else 'N/A' }}</td>
-                        <td>{{ doctor.specialization or 'General' }}</td>
-                        <td>
-                            {% if doctor.is_active %}
-                                <span class="badge bg-success">Active</span>
-                            {% else %}
-                                <span class="badge bg-danger">Inactive</span>
+                    <tr id="doctor-row-{{ doctor.id }}" class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <td class="whitespace-nowrap px-6 py-4">
+                            <div class="flex items-center">
+                                <div
+                                    class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400 font-bold">
+                                    {{ doctor.full_name[:2].upper() }}
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-slate-900 dark:text-white">Dr. {{
+                                        doctor.full_name }}</div>
+                                    <div class="text-xs text-slate-500 dark:text-slate-400">ID: #{{ doctor.id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4">
+                            <div class="text-sm text-slate-900 dark:text-slate-300">{{ doctor.email }}</div>
+                            {% if doctor.phone %}
+                            <div class="text-sm text-slate-500 dark:text-slate-400">{{ doctor.phone }}</div>
                             {% endif %}
                         </td>
-                        <td>
-                            <form method="POST" action="{{ url_for('admin.delete_doctor', doctor_id=doctor.id) }}" style="display: inline;">
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
+                        <td class="whitespace-nowrap px-6 py-4">
+                            {% if doctor.department %}
+                            <span
+                                class="inline-flex rounded-full bg-sky-100 px-2 text-xs font-semibold leading-5 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300">
+                                {{ doctor.department.name }}
+                            </span>
+                            {% else %}
+                            <span class="text-sm text-slate-400 italic">Not Assigned</span>
+                            {% endif %}
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
+                            {{ doctor.specialization or 'General' }}
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4">
+                            {% if doctor.is_active %}
+                            <span
+                                class="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                Active
+                            </span>
+                            {% else %}
+                            <span
+                                class="inline-flex rounded-full bg-red-100 px-2 text-xs font-semibold leading-5 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                Inactive
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                            <div class="flex justify-end gap-2">
+                                <button
+                                    class="text-teal-600 hover:text-teal-900 dark:text-teal-400 dark:hover:text-teal-300">Edit</button>
+                                <form method="POST" action="{{ url_for('admin.delete_doctor', doctor_id=doctor.id) }}"
+                                    class="inline"
+                                    onsubmit="return deleteDoctor(event, '{{ doctor.id }}', '{{ doctor.full_name }}')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                    <input type="hidden" name="hard_delete" value="true">
+                                    <button type="submit"
+                                        class="text-rose-600 hover:text-rose-900 dark:text-rose-400 dark:hover:text-rose-300">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                            <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            <p class="mt-2">No doctors found. Try adjusting your search or add a new doctor.</p>
                         </td>
                     </tr>
                     {% endfor %}
@@ -53,61 +182,254 @@
     </div>
 </div>
 
-<div class="modal fade" id="addDoctorModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add New Doctor</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- Add Doctor Modal -->
+<div id="addDoctorModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog"
+    aria-modal="true">
+    <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-slate-500 bg-opacity-75 transition-opacity dark:bg-slate-900 dark:bg-opacity-75"
+            aria-hidden="true" onclick="closeModal('addDoctorModal')"></div>
+
+        <!-- Modal panel -->
+        <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+        <div
+            class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all dark:bg-slate-900 sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle">
+            <div class="bg-white px-4 pt-5 pb-4 dark:bg-slate-900 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mt-3 w-full text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg font-medium leading-6 text-slate-900 dark:text-white" id="modal-title">Add
+                            New Doctor</h3>
+                        <div class="mt-4">
+                            <form id="addDoctorForm" method="POST" action="{{ url_for('admin.add_doctor') }}"
+                                class="space-y-4">
+                                <div id="addDoctorError"
+                                    class="hidden rounded-md bg-rose-50 p-3 text-sm text-rose-700 dark:bg-rose-900/20 dark:text-rose-300">
+                                </div>
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <label for="full_name"
+                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300">Full
+                                            Name *</label>
+                                        <input type="text" name="full_name" id="full_name" required
+                                            class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="email"
+                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300">Email
+                                            Address *</label>
+                                        <input type="email" name="email" id="email" required
+                                            class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="password"
+                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300">Password
+                                            *</label>
+                                        <input type="password" name="password" id="password" required
+                                            class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="phone"
+                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300">Phone
+                                            Number</label>
+                                        <input type="tel" name="phone" id="phone"
+                                            class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="department_id"
+                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300">Department</label>
+                                        <select name="department_id" id="department_id"
+                                            class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:text-sm">
+                                            <option value="">Select Department</option>
+                                            {% for dept in departments %}
+                                            <option value="{{ dept.id }}">{{ dept.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="specialization"
+                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300">Specialization</label>
+                                        <input type="text" name="specialization" id="specialization"
+                                            placeholder="e.g. Cardiology"
+                                            class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="consultation_fee"
+                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300">Consultation
+                                            Fee (₹)</label>
+                                        <input type="number" step="0.01" name="consultation_fee" id="consultation_fee"
+                                            value="0.00"
+                                            class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="avg_consultation_time"
+                                            class="block text-sm font-medium text-slate-700 dark:text-slate-300">Avg.
+                                            Time (min)</label>
+                                        <input type="number" name="avg_consultation_time" id="avg_consultation_time"
+                                            value="15"
+                                            class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:text-sm">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <form method="POST" action="{{ url_for('admin.add_doctor') }}">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="full_name" class="form-label">Full Name *</label>
-                        <input type="text" class="form-control" id="full_name" name="full_name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email *</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password *</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="phone" class="form-label">Phone</label>
-                        <input type="tel" class="form-control" id="phone" name="phone">
-                    </div>
-                    <div class="mb-3">
-                        <label for="department_id" class="form-label">Department</label>
-                        <select class="form-select" id="department_id" name="department_id">
-                            <option value="">Select Department</option>
-                            {% for dept in departments %}
-                                <option value="{{ dept.id }}">{{ dept.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="specialization" class="form-label">Specialization</label>
-                        <input type="text" class="form-control" id="specialization" name="specialization">
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="consultation_fee" class="form-label">Consultation Fee</label>
-                            <input type="number" step="0.01" class="form-control" id="consultation_fee" name="consultation_fee" value="0">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="avg_consultation_time" class="form-label">Avg Consult Time (min)</label>
-                            <input type="number" class="form-control" id="avg_consultation_time" name="avg_consultation_time" value="15">
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Add Doctor</button>
-                </div>
-            </form>
+            <div class="bg-slate-50 px-4 py-3 dark:bg-slate-800/50 sm:flex sm:flex-row-reverse sm:px-6">
+                <button type="button" id="saveDoctorBtn" onclick="submitAddDoctorForm()"
+                    class="inline-flex w-full justify-center rounded-md border border-transparent bg-teal-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm">
+                    Add Doctor
+                </button>
+                <button type="button" onclick="closeModal('addDoctorModal')"
+                    class="mt-3 inline-flex w-full justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-base font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Cancel
+                </button>
+            </div>
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.remove('hidden');
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+    }
+
+    function submitAddDoctorForm() {
+        const form = document.getElementById('addDoctorForm');
+        // Trigger the submit event handler
+        form.dispatchEvent(new Event('submit'));
+    }
+
+    async function deleteDoctor(event, doctorId, doctorName) {
+        event.preventDefault();
+
+        if (!confirm(`Are you sure you want to permanently delete Dr. ${doctorName}?\n\nThis action cannot be undone. All related appointments will be cancelled.`)) {
+            return false;
+        }
+
+        const form = event.target;
+        const btn = form.querySelector('button[type="submit"]');
+        const originalHtml = btn.innerHTML;
+
+        // Show loading state
+        btn.disabled = true;
+        btn.innerHTML = '...';
+
+        try {
+            const formData = new FormData(form);
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // If hard deleted, remove row
+                if (result.action === 'deleted') {
+                    const row = document.getElementById(`doctor-row-${doctorId}`);
+                    if (row) {
+                        row.remove();
+                        // Check if table is empty
+                        const tbody = document.querySelector('tbody');
+                        if (tbody.children.length === 0) {
+                            window.location.reload();
+                        }
+                    }
+                } else if (result.action === 'deactivated') {
+                    // If deactivated (soft delete), reload to show updated status
+                    window.location.reload();
+                }
+            } else {
+                alert(result.message || 'Error deleting doctor');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the doctor.');
+        } finally {
+            // Reset button if row still exists (e.g. error or deactivation)
+            if (document.body.contains(btn)) {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        }
+
+        return false;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const addDoctorForm = document.getElementById('addDoctorForm');
+        const errorDiv = document.getElementById('addDoctorError');
+        const saveBtn = document.getElementById('saveDoctorBtn');
+        const originalBtnText = saveBtn.innerHTML;
+
+        if (addDoctorForm) {
+            addDoctorForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                // Reset error state
+                errorDiv.classList.add('hidden');
+                errorDiv.textContent = '';
+
+                // Set loading state
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = 'Saving...';
+
+                // Collect form data
+                const formData = new FormData(addDoctorForm);
+                const data = Object.fromEntries(formData.entries());
+                const csrfToken = formData.get('csrf_token');
+
+                if (!csrfToken) {
+                    errorDiv.textContent = 'Missing CSRF token. Please refresh the page and try again.';
+                    errorDiv.classList.remove('hidden');
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = originalBtnText;
+                    return;
+                }
+
+                try {
+                    const response = await fetch("{{ url_for('admin.add_doctor') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        // Success - reload page to show new doctor
+                        window.location.reload();
+                    } else {
+                        // Show error message
+                        throw new Error(result.message || 'An error occurred while adding the doctor.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    errorDiv.textContent = error.message;
+                    errorDiv.classList.remove('hidden');
+
+                    // Reset button state
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = originalBtnText;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
 {% endblock %}

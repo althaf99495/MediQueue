@@ -1,110 +1,215 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4 mb-5">
-    <div class="card p-4">
-        <h2 class="mb-4">Book an Appointment</h2>
-        
-        <form method="POST">
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="department_id" class="form-label">Department</label>
-                    <select class="form-select" id="department_id" name="department_id" onchange="filterDoctors()">
-                        <option value="">Select Department</option>
-                        {% for dept in departments %}
-                            <option value="{{ dept.id }}">{{ dept.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <div class="col-md-6 mb-3">
-                    <label for="doctor_id" class="form-label">Doctor *</label>
-                    <select class="form-select" id="doctor_id" name="doctor_id" required>
-                        <option value="">Select Doctor</option>
-                        {% for doctor in doctors %}
-                            <option value="{{ doctor.id }}" data-department="{{ doctor.department_id }}">
-                                Dr. {{ doctor.full_name }} - {{ doctor.specialization or 'General' }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-950">
+    <div
+        class="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl dark:bg-slate-900 dark:border dark:border-slate-800">
+        <div>
+            <h2 class="text-center text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Book an Appointment
+            </h2>
+            <p class="mt-2 text-center text-sm text-slate-600 dark:text-slate-400">
+                Schedule a consultation with our specialists.
+            </p>
+        </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="appointment_date" class="form-label">Date *</label>
-                    <input type="date" class="form-control" id="appointment_date" name="appointment_date" required min="{{ now.strftime('%Y-%m-%d') }}">
-                </div>
-                
-                <div class="col-md-6 mb-3">
-                    <label for="slot_time" class="form-label">Time Slot *</label>
-                    <select class="form-select" id="slot_time" name="slot_time" required>
-                        <option value="">Select Time</option>
-                        <option value="09:00">09:00 AM</option>
-                        <option value="10:00">10:00 AM</option>
-                        <option value="11:00">11:00 AM</option>
-                        <option value="12:00">12:00 PM</option>
-                        <option value="14:00">02:00 PM</option>
-                        <option value="15:00">03:00 PM</option>
-                        <option value="16:00">04:00 PM</option>
-                        <option value="17:00">05:00 PM</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label for="symptoms" class="form-label">Symptoms / Reason for Visit</label>
-                <textarea class="form-control" id="symptoms" name="symptoms" rows="3" placeholder="Describe your symptoms or reason for appointment"></textarea>
-            </div>
-
-            <div class="alert alert-info">
-                <i class="bi bi-info-circle"></i> You will receive confirmation once your appointment is scheduled.
-            </div>
-
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Book Appointment</button>
-                <a href="{{ url_for('patient.dashboard') }}" class="btn btn-secondary">Cancel</a>
-            </div>
-        </form>
-    </div>
-
-    <div class="card mt-4 p-4">
-        <h4>Available Doctors</h4>
-        <div class="row mt-3">
-            {% for doctor in doctors %}
-            <div class="col-md-6 mb-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Dr. {{ doctor.full_name }}</h5>
-                        <p class="card-text">
-                            <strong>{{ doctor.specialization or 'General Practitioner' }}</strong><br>
-                            <span class="text-muted">{{ doctor.department.name if doctor.department else 'General' }}</span><br>
-                            <span class="text-primary">Consultation Fee: ${{ doctor.consultation_fee }}</span>
-                        </p>
+        <form id="bookingForm" method="POST" class="mt-8 space-y-6">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <div id="formError" class="hidden rounded-md bg-red-50 p-4 dark:bg-red-900/20">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p id="formErrorMessage" class="text-sm text-red-700 dark:text-red-200"></p>
                     </div>
                 </div>
             </div>
-            {% endfor %}
-        </div>
+
+            <div class="space-y-6">
+                <!-- Department -->
+                <div>
+                    <label for="department_id"
+                        class="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Department</label>
+                    <select id="department_id" name="department_id" onchange="filterDoctors()"
+                        class="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white sm:text-sm">
+                        <option value="">Select Department</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept.id }}">{{ dept.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Doctor -->
+                <div>
+                    <label for="doctor_id"
+                        class="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Doctor *</label>
+                    <select id="doctor_id" name="doctor_id" required
+                        class="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white sm:text-sm">
+                        <option value="">Select Doctor</option>
+                        {% for doctor in doctors %}
+                        <option value="{{ doctor.id }}" data-department="{{ doctor.department_id }}">
+                            Dr. {{ doctor.full_name }} - {{ doctor.specialization or 'General' }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Date -->
+                    <div>
+                        <label for="appointment_date"
+                            class="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Date *</label>
+                        <input type="date" id="appointment_date" name="appointment_date" required
+                            min="{{ now.strftime('%Y-%m-%d') }}"
+                            class="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white sm:text-sm">
+                    </div>
+
+                    <!-- Time -->
+                    <div>
+                        <label for="slot_time"
+                            class="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Time Slot
+                            *</label>
+                        <select id="slot_time" name="slot_time" required
+                            class="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white sm:text-sm">
+                            <option value="">Select Time</option>
+                            <option value="09:00">09:00 AM</option>
+                            <option value="10:00">10:00 AM</option>
+                            <option value="11:00">11:00 AM</option>
+                            <option value="12:00">12:00 PM</option>
+                            <option value="14:00">02:00 PM</option>
+                            <option value="15:00">03:00 PM</option>
+                            <option value="16:00">04:00 PM</option>
+                            <option value="17:00">05:00 PM</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Symptoms -->
+                <div>
+                    <label for="symptoms"
+                        class="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Symptoms /
+                        Reason</label>
+                    <textarea id="symptoms" name="symptoms" rows="3" placeholder="Describe your symptoms..."
+                        class="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white sm:text-sm"></textarea>
+                </div>
+            </div>
+
+            <div class="rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3 flex-1 md:flex md:justify-between">
+                        <p class="text-sm text-blue-700 dark:text-blue-300">You will receive confirmation once
+                            scheduled.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <button type="submit" id="submitBtn"
+                    class="flex w-full justify-center rounded-md border border-transparent bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span id="btnText">Book Appointment</span>
+                    <svg id="btnSpinner" class="hidden ml-2 -mr-1 h-5 w-5 animate-spin text-white"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                </button>
+                <a href="{{ url_for('patient.dashboard') }}"
+                    class="flex w-full justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
+                    Cancel
+                </a>
+            </div>
+        </form>
     </div>
 </div>
 
 <script>
-function filterDoctors() {
-    const deptId = document.getElementById('department_id').value;
-    const doctorSelect = document.getElementById('doctor_id');
-    const options = doctorSelect.getElementsByTagName('option');
-    
-    for (let i = 1; i < options.length; i++) {
-        const option = options[i];
-        const docDeptId = option.getAttribute('data-department');
-        
-        if (!deptId || docDeptId === deptId) {
-            option.style.display = 'block';
-        } else {
-            option.style.display = 'none';
+    function filterDoctors() {
+        const deptId = document.getElementById('department_id').value;
+        const doctorSelect = document.getElementById('doctor_id');
+        const options = doctorSelect.getElementsByTagName('option');
+
+        for (let i = 1; i < options.length; i++) {
+            const option = options[i];
+            const docDeptId = option.getAttribute('data-department');
+
+            if (!deptId || docDeptId === deptId) {
+                option.style.display = 'block';
+            } else {
+                option.style.display = 'none';
+            }
         }
     }
-}
+
+    document.getElementById('bookingForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const btn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
+        const errorDiv = document.getElementById('formError');
+        const errorMessage = document.getElementById('formErrorMessage');
+
+        // Reset error
+        errorDiv.classList.add('hidden');
+        errorMessage.textContent = '';
+
+        // Set loading state
+        btn.disabled = true;
+        btnText.textContent = 'Booking...';
+        btnSpinner.classList.remove('hidden');
+
+        try {
+            const formData = new FormData(form);
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            });
+
+            // Handle redirects (if backend returns 302/303, fetch follows it)
+            // But we are returning JSON now.
+
+            const data = await response.json();
+
+            if (data.success) {
+                window.location.href = data.redirect_url;
+            } else {
+                errorMessage.textContent = data.message || 'An error occurred. Please try again.';
+                errorDiv.classList.remove('hidden');
+                // Reset button
+                btn.disabled = false;
+                btnText.textContent = 'Book Appointment';
+                btnSpinner.classList.add('hidden');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            errorMessage.textContent = 'A network error occurred. Please try again.';
+            errorDiv.classList.remove('hidden');
+            // Reset button
+            btn.disabled = false;
+            btnText.textContent = 'Book Appointment';
+            btnSpinner.classList.add('hidden');
+        }
+    });
 </script>
 {% endblock %}

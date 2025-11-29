@@ -43,6 +43,12 @@ class User(UserMixin, db.Model):
     def is_patient(self):
         return self.role == 'patient'
 
+    def get_id(self):
+        return str(self.id)
+
+    def __repr__(self):
+        return f"<User {self.id} - {self.email} ({self.role})>"
+
 class Department(db.Model):
     __tablename__ = 'departments'
     
@@ -113,12 +119,33 @@ class MedicalRecord(db.Model):
     notes = db.Column(db.Text)
     
     vital_signs = db.Column(db.JSON)
+    report_file = db.Column(db.String(255))
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     patient = db.relationship('User', foreign_keys=[patient_id], backref='medical_records')
     doctor = db.relationship('User', foreign_keys=[doctor_id], backref='records_created')
     appointment = db.relationship('Appointment', backref='medical_record')
+    reports = db.relationship('Report', backref='medical_record', lazy=True)
+
+class Report(db.Model):
+    __tablename__ = 'reports'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    appointment_id = db.Column(db.Integer, db.ForeignKey('appointments.id'), nullable=True)
+    medical_record_id = db.Column(db.Integer, db.ForeignKey('medical_records.id'), nullable=True)
+    
+    title = db.Column(db.String(100), nullable=False)
+    report_type = db.Column(db.String(50))
+    report_file = db.Column(db.String(255))
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    patient = db.relationship('User', foreign_keys=[patient_id], backref='reports')
+    doctor = db.relationship('User', foreign_keys=[doctor_id], backref='reports_created')
+    appointment = db.relationship('Appointment', backref='report')
 
 class Prescription(db.Model):
     __tablename__ = 'prescriptions'

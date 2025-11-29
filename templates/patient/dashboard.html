@@ -1,99 +1,43 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
 
-{% block content %}
-<div class="container mt-4">
-    <div class="dashboard-header">
-        <h2>Welcome, {{ current_user.full_name }}</h2>
-        <p class="text-muted mb-0">Patient Dashboard</p>
-    </div>
-
-    <div class="row mb-4">
-        {% if queue_position %}
-        <div class="col-md-12">
-            <div class="card p-4 bg-primary text-white mb-3">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h4 class="mb-2">You are in the queue!</h4>
-                        <h2 class="mb-0">Position: {{ queue_position.position }} of {{ queue_position.total }}</h2>
-                        <p class="mb-0">Estimated wait time: {{ estimated_wait }} minutes</p>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <a href="{{ url_for('patient.leave_queue') }}" class="btn btn-light btn-lg">Leave Queue</a>
-                    </div>
-                </div>
-            </div>
+{% block dashboard_content %}
+<div class="space-y-8">
+    {% if queue_position %}
+    <div class="overflow-hidden rounded-2xl bg-teal-600 text-white shadow-lg relative p-8">
+        <h2 class="text-4xl font-bold text-center mb-4">Queue Position</h2>
+        <div class="text-center">
+            <div class="text-8xl font-bold">{{ queue_position.position }}</div>
+            <p class="text-2xl mt-4">of {{ queue_position.total }} patients</p>
+            <p class="mt-4">Estimated Wait: {{ estimated_wait }} mins</p>
+            <p class="mt-2">Doctor: Dr. {{ doctor_name }}</p>
         </div>
-        {% else %}
-        <div class="col-md-12">
-            <div class="card p-4 text-center">
-                <h5>Not in any queue</h5>
-                <p class="text-muted">Book an appointment or join a walk-in queue</p>
-                <a href="{{ url_for('patient.book_appointment') }}" class="btn btn-primary">Book Appointment</a>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-
-    <div class="row">
-        <div class="col-lg-6">
-            <div class="card p-4 mb-4">
-                <h4 class="mb-3">Upcoming Appointments</h4>
-                {% if appointments %}
-                    {% for apt in appointments %}
-                    <div class="mb-3 p-3 bg-light rounded">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <strong>Dr. {{ apt.doctor.full_name }}</strong>
-                                <p class="mb-0 small text-muted">
-                                    {{ apt.appointment_date.strftime('%B %d, %Y at %I:%M %p') }}
-                                </p>
-                            </div>
-                            <span class="badge bg-success">{{ apt.status }}</span>
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="text-muted">No upcoming appointments</p>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="col-lg-6">
-            <div class="card p-4 mb-4">
-                <h4 class="mb-3">Recent Medical Records</h4>
-                {% if medical_records %}
-                    {% for record in medical_records %}
-                    <div class="mb-3 p-3 bg-light rounded">
-                        <strong>{{ record.visit_date.strftime('%B %d, %Y') }}</strong>
-                        <p class="mb-0 small">Dr. {{ record.doctor.full_name }}</p>
-                        <p class="mb-0 small text-muted">{{ record.diagnosis[:50] }}...</p>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="text-muted">No medical records yet</p>
-                {% endif %}
-                <a href="{{ url_for('patient.medical_history') }}" class="btn btn-outline-primary btn-sm mt-2">View All Records</a>
-            </div>
+        <div class="mt-8 text-center">
+            <a href="{{ url_for('patient.leave_queue') }}"
+                class="inline-flex items-center rounded-lg bg-white/20 px-6 py-3 text-white hover:bg-white/30">Leave
+                Queue</a>
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-12">
-            <div class="card p-4">
-                <h4 class="mb-3">Quick Actions</h4>
-                <div class="d-flex gap-3 flex-wrap">
-                    <a href="{{ url_for('patient.book_appointment') }}" class="btn btn-primary">
-                        <i class="bi bi-calendar-plus"></i> Book Appointment
-                    </a>
-                    <a href="{{ url_for('patient.qr_checkin') }}" class="btn btn-info">
-                        <i class="bi bi-qr-code"></i> QR Check-in
-                    </a>
-                    <a href="{{ url_for('patient.prescriptions') }}" class="btn btn-success">
-                        <i class="bi bi-file-medical"></i> View Prescriptions
-                    </a>
-                </div>
-            </div>
-        </div>
+    {% else %}
+    <div class="rounded-2xl bg-white p-12 text-center shadow-sm dark:bg-slate-900">
+        <h3 class="text-xl font-bold">Not in any queue</h3>
+        <p class="mt-4">Book an appointment to join the queue</p>
+        <a href="{{ url_for('patient.book_appointment') }}"
+            class="mt-6 inline-flex items-center rounded-lg bg-teal-600 px-6 py-3 text-white">Book Appointment</a>
     </div>
+    {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% if queue_position %}
+<script>
+    setInterval(function () {
+        fetch('/api/queue/status/{{ queue_position.id }}')
+            .then(r => r.json())
+            .then(data => {
+                if (data.position) document.querySelector('.text-8xl').textContent = data.position;
+            });
+    }, 5000);
+</script>
+{% endif %}
 {% endblock %}

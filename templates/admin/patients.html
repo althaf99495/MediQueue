@@ -1,42 +1,136 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
 
-{% block content %}
-<div class="container mt-4">
-    <div class="card p-4">
-        <h2 class="mb-4">Registered Patients</h2>
+{% block header_title %}Manage Patients{% endblock %}
 
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-light">
+{% block dashboard_content %}
+<div class="space-y-6">
+    <!-- Header Actions -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h2 class="text-lg font-medium text-slate-900 dark:text-white">Registered Patients</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400">View and manage patient records.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <div class="flex rounded-md shadow-sm">
+                <a href="{{ url_for('admin.export_patients') }}"
+                    class="relative inline-flex items-center rounded-l-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:z-10 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                    CSV
+                </a>
+                <a href="{{ url_for('admin.export_patients_pdf') }}"
+                    class="relative -ml-px inline-flex items-center rounded-r-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:z-10 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                    PDF
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="rounded-xl bg-white p-4 shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+        <form method="GET" action="{{ url_for('admin.manage_patients') }}" class="flex gap-4">
+            <div class="relative flex-grow">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input type="text" name="search"
+                    class="block w-full rounded-lg border border-slate-300 bg-slate-50 py-2 pl-10 pr-3 text-sm placeholder-slate-500 focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-400"
+                    placeholder="Search by name, email, or phone..." value="{{ search or '' }}">
+            </div>
+            <button type="submit"
+                class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 dark:bg-slate-700 dark:hover:bg-slate-600">
+                Search
+            </button>
+            {% if search %}
+            <a href="{{ url_for('admin.manage_patients') }}"
+                class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                Clear
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                <thead class="bg-slate-50 dark:bg-slate-800/50">
                     <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Age</th>
-                        <th>Gender</th>
-                        <th>Blood Group</th>
-                        <th>Registered</th>
-                        <th>Status</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Patient</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Contact</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Details</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Registered</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Status</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
                     {% for patient in patients %}
-                    <tr>
-                        <td>{{ patient.id }}</td>
-                        <td>{{ patient.full_name }}</td>
-                        <td>{{ patient.email }}</td>
-                        <td>{{ patient.phone or 'N/A' }}</td>
-                        <td>{{ patient.age or 'N/A' }}</td>
-                        <td>{{ patient.gender or 'N/A' }}</td>
-                        <td>{{ patient.blood_group or 'N/A' }}</td>
-                        <td>{{ patient.created_at.strftime('%Y-%m-%d') }}</td>
-                        <td>
-                            {% if patient.is_active %}
-                                <span class="badge bg-success">Active</span>
-                            {% else %}
-                                <span class="badge bg-danger">Inactive</span>
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <td class="whitespace-nowrap px-6 py-4">
+                            <div class="flex items-center">
+                                <div
+                                    class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 font-bold">
+                                    {{ patient.full_name[:2].upper() }}
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-slate-900 dark:text-white">{{
+                                        patient.full_name }}</div>
+                                    <div class="text-xs text-slate-500 dark:text-slate-400">ID: #{{ patient.id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4">
+                            <div class="text-sm text-slate-900 dark:text-slate-300">{{ patient.email }}</div>
+                            {% if patient.phone %}
+                            <div class="text-sm text-slate-500 dark:text-slate-400">{{ patient.phone }}</div>
                             {% endif %}
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4">
+                            <div class="text-sm text-slate-500 dark:text-slate-400">
+                                Age: {{ patient.age or 'N/A' }} | Gender: {{ patient.gender or 'N/A' }}
+                            </div>
+                            <div class="text-sm text-slate-500 dark:text-slate-400">
+                                Blood Group: <span class="font-medium text-rose-600 dark:text-rose-400">{{
+                                    patient.blood_group or 'N/A' }}</span>
+                            </div>
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
+                            {{ patient.created_at.strftime('%Y-%m-%d') }}
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4">
+                            {% if patient.is_active %}
+                            <span
+                                class="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                Active
+                            </span>
+                            {% else %}
+                            <span
+                                class="inline-flex rounded-full bg-red-100 px-2 text-xs font-semibold leading-5 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                Inactive
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                            <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            <p class="mt-2">No patients found.</p>
                         </td>
                     </tr>
                     {% endfor %}

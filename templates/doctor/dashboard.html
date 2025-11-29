@@ -1,101 +1,326 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
 
-{% block content %}
-<div class="container mt-4">
-    <div class="dashboard-header">
-        <h2>Welcome, Dr. {{ current_user.full_name }}</h2>
-        <p class="text-muted mb-0">{{ current_user.department.name if current_user.department else 'General Practice' }}</p>
-    </div>
+{% block header_title %}Doctor Dashboard{% endblock %}
 
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="stat-card stat-card-primary">
-                <i class="bi bi-list-ol" style="font-size: 2rem;"></i>
-                <h3 class="mt-2">{{ queue_length }}</h3>
-                <p>Current Queue</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card stat-card-success">
-                <i class="bi bi-people-fill" style="font-size: 2rem;"></i>
-                <h3 class="mt-2">{{ patients_served }}</h3>
-                <p>Patients Today</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card stat-card-warning">
-                <i class="bi bi-calendar-check" style="font-size: 2rem;"></i>
-                <h3 class="mt-2">{{ appointments|length }}</h3>
-                <p>Appointments Today</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card stat-card-danger">
-                <i class="bi bi-clock" style="font-size: 2rem;"></i>
-                <h3 class="mt-2">{{ current_user.avg_consultation_time }}m</h3>
-                <p>Avg Consult Time</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="card p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="mb-0">Current Queue</h4>
-                    <a href="{{ url_for('doctor.call_next_patient') }}" class="btn btn-primary">
-                        <i class="bi bi-telephone-fill"></i> Call Next Patient
-                    </a>
+{% block dashboard_content %}
+<div class="space-y-8">
+    <!-- Stats Grid (Responsive 4-column layout) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Current Queue -->
+        <div class="relative overflow-hidden rounded-2xl bg-teal-600 p-6 text-white shadow-lg">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white/20 blur-xl"></div>
+            <div class="relative">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="rounded-full bg-white/20 p-2">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                    </div>
+                    <span class="font-medium text-teal-100">Current Queue</span>
                 </div>
+                <h3 class="text-4xl font-bold">{{ queue_length }}</h3>
+            </div>
+        </div>
+
+        <!-- Patients Today -->
+        <div class="relative overflow-hidden rounded-2xl bg-emerald-500 p-6 text-white shadow-lg">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white/20 blur-xl"></div>
+            <div class="relative">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="rounded-full bg-white/20 p-2">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <span class="font-medium text-emerald-100">Patients Today</span>
+                </div>
+                <h3 class="text-4xl font-bold">{{ patients_served }}</h3>
+            </div>
+        </div>
+
+        <!-- Avg Consult Time -->
+        <div class="relative overflow-hidden rounded-2xl bg-rose-500 p-6 text-white shadow-lg">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white/20 blur-xl"></div>
+            <div class="relative">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="rounded-full bg-white/20 p-2">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <span class="font-medium text-rose-100">Avg Consult Time</span>
+                </div>
+                <h3 class="text-4xl font-bold">{{ current_user.avg_consultation_time }}m</h3>
+            </div>
+        </div>
+
+        <!-- Appointments -->
+        <div class="relative overflow-hidden rounded-2xl bg-amber-500 p-6 text-white shadow-lg">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white/20 blur-xl"></div>
+            <div class="relative">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="rounded-full bg-white/20 p-2">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <span class="font-medium text-amber-100">Appointments</span>
+                </div>
+                <h3 class="text-4xl font-bold">{{ appointments|length }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Action Banner -->
+    <div class="rounded-2xl bg-white p-6 shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Quick Actions</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Manage your daily tasks efficiently</p>
+            </div>
+            <a href="{{ url_for('doctor.select_patient') }}"
+                class="inline-flex items-center justify-center rounded-full bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                <svg class="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+                Select Patient & Add Record
+            </a>
+        </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-3">
+        <!-- Current Queue List -->
+        <div
+            class="lg:col-span-2 rounded-2xl bg-white p-6 shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+            <div class="mb-6 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Current Queue</h3>
+                <a href="{{ url_for('doctor.call_next_patient') }}" id="callNextBtn"
+                    class="inline-flex items-center rounded-full bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
+                    <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    Call Next
+                </a>
+            </div>
+
+            <!-- Overflow container for mobile table-like safety -->
+            <div class="overflow-x-auto" id="queueContainer">
                 {% if queue %}
+                <div class="space-y-3 min-w-[600px] sm:min-w-0" id="queueList">
                     {% for item in queue %}
-                    <div class="queue-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">{{ item.patient.full_name }}</h6>
-                                <p class="text-muted mb-0 small">
-                                    <i class="bi bi-envelope"></i> {{ item.patient.email }} | 
-                                    <i class="bi bi-telephone"></i> {{ item.patient.phone or 'N/A' }}
-                                </p>
+                    <div
+                        class="queue-item flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="flex h-12 w-12 items-center justify-center rounded-full bg-teal-100 text-lg font-bold text-teal-700 dark:bg-teal-900/50 dark:text-teal-300">
+                                {{ item.position }}
                             </div>
-                            <div class="text-end">
-                                <span class="badge badge-position bg-primary">Position {{ item.position }}</span>
-                                <div class="mt-2">
-                                    <a href="{{ url_for('doctor.consult_patient', patient_id=item.patient_id) }}" class="btn btn-sm btn-success">
-                                        <i class="bi bi-clipboard-check"></i> Consult
-                                    </a>
-                                    <a href="{{ url_for('doctor.view_patient', patient_id=item.patient_id) }}" class="btn btn-sm btn-info">
-                                        <i class="bi bi-eye"></i> View
-                                    </a>
+                            <div>
+                                <h4 class="font-bold text-slate-900 dark:text-white text-left">{{ item.patient.full_name
+                                    }}</h4>
+                                <div class="flex flex-wrap gap-3 text-sm text-slate-500 dark:text-slate-400">
+                                    <span class="flex items-center gap-1">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                        {{ item.patient.email }}
+                                    </span>
+                                    <span class="flex items-center gap-1">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                        </svg>
+                                        {{ item.patient.phone or 'N/A' }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
+                        <div class="flex gap-2">
+                            <a href="{{ url_for('doctor.consult_patient', patient_id=item.patient_id) }}"
+                                class="inline-flex items-center rounded-full bg-emerald-100 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50">
+                                <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                </svg>
+                                Consult
+                            </a>
+                            <a href="{{ url_for('doctor.view_patient', patient_id=item.patient_id) }}"
+                                class="inline-flex items-center rounded-full bg-sky-100 px-4 py-2 text-sm font-medium text-sky-700 hover:bg-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-900/50">
+                                <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                View
+                            </a>
+                        </div>
                     </div>
                     {% endfor %}
+                </div>
                 {% else %}
-                    <div class="text-center py-5 text-muted">
-                        <i class="bi bi-inbox" style="font-size: 3rem;"></i>
-                        <p class="mt-3">No patients in queue</p>
+                <div id="emptyQueueMsg" class="py-12 text-center">
+                    <div
+                        class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                        <svg class="h-8 w-8 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
                     </div>
+                    <h6 class="text-slate-900 dark:text-white">No patients in queue</h6>
+                </div>
                 {% endif %}
             </div>
         </div>
 
-        <div class="col-lg-4">
-            <div class="card p-4">
-                <h4 class="mb-3">Today's Appointments</h4>
-                {% if appointments %}
-                    {% for apt in appointments %}
-                    <div class="mb-3 p-2 bg-light rounded">
-                        <strong>{{ apt.patient.full_name }}</strong>
-                        <p class="mb-0 small text-muted">{{ apt.appointment_date.strftime('%I:%M %p') }}</p>
+        <!-- Today's Appointments -->
+        <div class="rounded-2xl bg-white p-6 shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+            <h3 class="mb-6 text-lg font-bold text-slate-900 dark:text-white">Today's Appointments</h3>
+            {% if appointments %}
+            <div class="space-y-3">
+                {% for apt in appointments %}
+                <div class="flex items-center gap-4 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/50">
+                    <div
+                        class="flex flex-col items-center justify-center rounded-lg bg-white p-2 text-center shadow-sm dark:bg-slate-800 dark:border dark:border-slate-700 w-16">
+                        <span class="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Time</span>
+                        <span class="text-lg font-bold text-teal-600 dark:text-teal-400">{{
+                            apt.appointment_date.strftime('%I:%M') }}</span>
                     </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="text-muted">No appointments scheduled</p>
-                {% endif %}
+                    <div>
+                        <h6 class="font-bold text-slate-900 dark:text-white text-left">{{ apt.patient.full_name }}</h6>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 text-left">General Checkup</p>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
+            {% else %}
+            <div class="py-8 text-center">
+                <p class="text-sm text-slate-500 dark:text-slate-400">No appointments scheduled</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const queueContainer = document.getElementById('queueContainer');
+        const callNextBtn = document.getElementById('callNextBtn');
+
+        // Polling function
+        async function updateQueue() {
+            try {
+                const response = await fetch("{{ url_for('doctor.queue_data') }}");
+                if (response.ok) {
+                    const data = await response.json();
+                    renderQueue(data.queue);
+                }
+            } catch (error) {
+                console.error('Error fetching queue:', error);
+            }
+        }
+
+        // Render queue items
+        function renderQueue(queue) {
+            if (!queue || queue.length === 0) {
+                queueContainer.innerHTML = `
+                <div id="emptyQueueMsg" class="py-12 text-center">
+                    <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                        <svg class="h-8 w-8 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
+                    </div>
+                    <h6 class="text-slate-900 dark:text-white">No patients in queue</h6>
+                </div>`;
+                return;
+            }
+
+            let html = '<div class="space-y-3 min-w-[600px] sm:min-w-0" id="queueList">';
+            queue.forEach(item => {
+                html += `
+                <div class="queue-item flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
+                    <div class="flex items-center gap-4">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-teal-100 text-lg font-bold text-teal-700 dark:bg-teal-900/50 dark:text-teal-300">
+                            ${item.position}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-900 dark:text-white text-left">${item.patient_name}</h4>
+                            <div class="flex flex-wrap gap-3 text-sm text-slate-500 dark:text-slate-400">
+                                <span class="flex items-center gap-1">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    ${item.patient_email}
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                    </svg>
+                                    ${item.patient_phone}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="/doctor/consult/${item.patient_id}" class="inline-flex items-center rounded-full bg-emerald-100 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50">
+                            <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                            </svg>
+                            Consult
+                        </a>
+                        <a href="/doctor/patient/${item.patient_id}" class="inline-flex items-center rounded-full bg-sky-100 px-4 py-2 text-sm font-medium text-sky-700 hover:bg-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:hover:bg-sky-900/50">
+                            <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            View
+                        </a>
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+            queueContainer.innerHTML = html;
+        }
+
+        // Call Next AJAX
+        callNextBtn.addEventListener('click', async function (e) {
+            e.preventDefault();
+            if (callNextBtn.classList.contains('opacity-50')) return;
+
+            const originalText = callNextBtn.innerHTML;
+            callNextBtn.innerHTML = 'Calling...';
+            callNextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            try {
+                const response = await fetch(callNextBtn.href, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    // Refresh queue immediately
+                    updateQueue();
+                    // Optionally show a toast notification here
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('Error calling next patient:', error);
+            } finally {
+                callNextBtn.innerHTML = originalText;
+                callNextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        });
+
+        // Start polling every 10 seconds
+        setInterval(updateQueue, 10000);
+    });
+</script>
 {% endblock %}

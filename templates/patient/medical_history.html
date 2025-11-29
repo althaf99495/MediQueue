@@ -1,46 +1,133 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
 
-{% block content %}
-<div class="container mt-4">
-    <div class="card p-4">
-        <h2 class="mb-4">My Medical History</h2>
-        
-        {% if records %}
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Date</th>
-                            <th>Doctor</th>
-                            <th>Symptoms</th>
-                            <th>Diagnosis</th>
-                            <th>Notes</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for record in records %}
-                        <tr>
-                            <td>{{ record.visit_date.strftime('%B %d, %Y') }}</td>
-                            <td>Dr. {{ record.doctor.full_name }}</td>
-                            <td>{{ record.symptoms or 'N/A' }}</td>
-                            <td>{{ record.diagnosis or 'N/A' }}</td>
-                            <td>{{ record.notes or 'N/A' }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="text-center py-5 text-muted">
-                <i class="bi bi-clipboard-data" style="font-size: 3rem;"></i>
-                <p class="mt-3">No medical records found</p>
-                <a href="{{ url_for('patient.book_appointment') }}" class="btn btn-primary mt-2">Book Your First Appointment</a>
-            </div>
-        {% endif %}
+{% block header_title %}Medical History{% endblock %}
 
-        <div class="mt-3">
-            <a href="{{ url_for('patient.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+{% block dashboard_content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h2 class="text-lg font-medium text-slate-900 dark:text-white">My Medical History</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400">View your past consultations and medical records.</p>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="rounded-xl bg-white p-4 shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+        <form method="GET" action="{{ url_for('patient.medical_history') }}" class="space-y-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                <div class="md:col-span-2">
+                    <label for="search" class="sr-only">Search</label>
+                    <div class="relative">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input type="text" name="search" id="search"
+                            class="block w-full rounded-lg border border-slate-300 bg-slate-50 py-2 pl-10 pr-3 text-sm placeholder-slate-500 focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-400"
+                            placeholder="Search symptoms, diagnosis, doctor..." value="{{ search or '' }}">
+                    </div>
+                </div>
+                <div>
+                    <label for="date_from" class="sr-only">From Date</label>
+                    <input type="date" name="date_from" id="date_from"
+                        class="block w-full rounded-lg border border-slate-300 bg-slate-50 py-2 px-3 text-sm text-slate-900 focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                        placeholder="From date" value="{{ date_from or '' }}">
+                </div>
+                <div>
+                    <label for="date_to" class="sr-only">To Date</label>
+                    <input type="date" name="date_to" id="date_to"
+                        class="block w-full rounded-lg border border-slate-300 bg-slate-50 py-2 px-3 text-sm text-slate-900 focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                        placeholder="To date" value="{{ date_to or '' }}">
+                </div>
+            </div>
+            <div class="flex items-center justify-between">
+                <button type="submit"
+                    class="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
+                    Apply Filters
+                </button>
+                {% if search or date_from or date_to %}
+                <a href="{{ url_for('patient.medical_history') }}"
+                    class="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200">
+                    Clear Filters
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Records List -->
+    <div class="space-y-4">
+        {% for record in records %}
+        <div
+            class="overflow-hidden rounded-xl bg-white shadow-sm transition-all hover:shadow-md dark:bg-slate-900 dark:border dark:border-slate-800">
+            <div class="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/50">
+                <div class="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-semibold text-slate-900 dark:text-white">
+                                {{ record.visit_date.strftime('%B %d, %Y') }}
+                            </h3>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">
+                                Dr. {{ record.doctor.full_name }}
+                            </p>
+                        </div>
+                    </div>
+                    {% if record.report_file %}
+                    <a href="{{ url_for('patient.download_report', record_id=record.id) }}"
+                        class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                        <svg class="-ml-0.5 mr-2 h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download Report
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="grid grid-cols-1 gap-6 px-6 py-4 md:grid-cols-3">
+                <div>
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        Symptoms</h4>
+                    <p class="mt-1 text-sm text-slate-900 dark:text-white">{{ record.symptoms or 'N/A' }}</p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        Diagnosis</h4>
+                    <p class="mt-1 text-sm text-slate-900 dark:text-white">{{ record.diagnosis or 'N/A' }}</p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Notes
+                    </h4>
+                    <p class="mt-1 text-sm text-slate-900 dark:text-white">{{ record.notes or 'N/A' }}</p>
+                </div>
+            </div>
         </div>
+        {% else %}
+        <div
+            class="flex flex-col items-center justify-center rounded-xl bg-white py-12 text-center shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+            <div class="rounded-full bg-slate-100 p-4 dark:bg-slate-800">
+                <svg class="h-10 w-10 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+            </div>
+            <h3 class="mt-4 text-lg font-medium text-slate-900 dark:text-white">No medical records found</h3>
+            <p class="mt-2 text-slate-500 dark:text-slate-400">You haven't had any consultations yet.</p>
+            <a href="{{ url_for('patient.book_appointment') }}"
+                class="mt-6 inline-flex items-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
+                Book Appointment
+            </a>
+        </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}

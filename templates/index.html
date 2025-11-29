@@ -1,69 +1,119 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="hero-section">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">Care You Can Believe In</h1>
-                <p class="lead mb-4">Smart hospital queue management system that reduces waiting times and improves patient-doctor coordination.</p>
-                <div class="d-flex gap-3">
-                    <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg px-4">Get Started</a>
-                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg px-4">Login</a>
-                </div>
-            </div>
-            <div class="col-lg-6 text-center">
-                <i class="bi bi-hospital" style="font-size: 12rem; opacity: 0.3;"></i>
-            </div>
+<div class="relative overflow-hidden">
+    <!-- Hero Background Glow -->
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] -z-10 pointer-events-none">
+        <div
+            class="absolute top-0 left-1/4 w-96 h-96 bg-teal-500/20 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob dark:bg-teal-500/10 dark:mix-blend-normal">
+        </div>
+        <div
+            class="absolute top-0 right-1/4 w-96 h-96 bg-emerald-500/20 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000 dark:bg-emerald-500/10 dark:mix-blend-normal">
         </div>
     </div>
-</div>
 
-<div class="container my-5">
-    <div class="row text-center mb-5">
-        <div class="col-12">
-            <h2 class="fw-bold mb-4">Why Choose MediQueue</h2>
-        </div>
-    </div>
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 text-center p-4">
-                <div class="feature-icon mb-3">
-                    <i class="bi bi-person-check-fill"></i>
-                </div>
-                <h4>Expert Doctors</h4>
-                <p class="text-muted">Access to qualified medical professionals across multiple specializations.</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100 text-center p-4">
-                <div class="feature-icon mb-3">
-                    <i class="bi bi-clock-history"></i>
-                </div>
-                <h4>Real-Time Queue</h4>
-                <p class="text-muted">Live queue updates and estimated wait times for better planning.</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100 text-center p-4">
-                <div class="feature-icon mb-3">
-                    <i class="bi bi-calendar-check"></i>
-                </div>
-                <h4>Easy Appointments</h4>
-                <p class="text-muted">Book appointments online or join walk-in queues instantly.</p>
-            </div>
-        </div>
-    </div>
-</div>
+    <!-- 1. The Container Wrapper & 2. The Hero Section (Top Fold) -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div class="py-24 lg:py-32 text-center">
 
-<div class="container my-5">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <div class="card p-5">
-                <h3 class="text-center mb-4">Get Started Today</h3>
-                <p class="text-center text-muted mb-4">Register as a patient to book appointments and manage your healthcare journey.</p>
-                <div class="text-center">
-                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-5">Register Now</a>
+            <!-- Logo -->
+            <div class="mb-8 flex justify-center">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="MediQueue Logo"
+                    class="h-24 w-24 rounded-2xl shadow-xl shadow-teal-500/20 animate-blob">
+            </div>
+
+            <div
+                class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium text-teal-600 bg-teal-50 border border-teal-100 mb-8 dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-800/50">
+                <span class="flex h-2 w-2 rounded-full bg-teal-500 mr-2"></span>
+                Now available for all hospitals
+            </div>
+
+            <h1 class="text-5xl md:text-7xl font-bold font-display tracking-tight text-slate-900 dark:text-white mb-6">
+                Care You Can <span
+                    class="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 via-emerald-500 to-teal-600">Believe
+                    In</span>
+            </h1>
+
+            <p class="mt-6 text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
+                Smart hospital queue management system that reduces waiting times and improves patient-doctor
+                coordination with real-time updates.
+            </p>
+
+            <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+                <a href="{{ url_for('auth.register') }}"
+                    class="inline-flex items-center justify-center bg-gradient-to-r from-teal-500 via-emerald-500 to-teal-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 hover:-translate-y-1 transition-all duration-300">
+                    Get Started Free
+                    <svg class="ml-2 -mr-1 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                    </svg>
+                </a>
+                <a href="{{ url_for('auth.login') }}"
+                    class="inline-flex items-center justify-center bg-white text-slate-700 border border-slate-200 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-slate-50 hover:-translate-y-1 transition-all duration-300 dark:bg-slate-900/50 dark:text-white dark:border-slate-700 dark:hover:bg-slate-800">
+                    Login
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. The Feature Section (Bottom Fold) -->
+    <div class="py-24 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-20">
+                <h2 class="text-3xl font-bold font-display tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+                    Why Choose MediQueue</h2>
+                <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">Experience the future of healthcare
+                    management</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+                <!-- Feature 1 -->
+                <div
+                    class="group bg-white dark:bg-slate-900/60 p-8 rounded-3xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 backdrop-blur-sm hover:shadow-xl hover:shadow-teal-500/5 hover:-translate-y-2 transition-all duration-300">
+                    <div
+                        class="inline-flex items-center justify-center p-4 bg-teal-50 dark:bg-teal-900/20 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="h-8 w-8 text-teal-600 dark:text-teal-400" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3">Expert Doctors</h3>
+                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Access to qualified medical
+                        professionals across multiple specializations with detailed profiles.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div
+                    class="group bg-white dark:bg-slate-900/60 p-8 rounded-3xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 backdrop-blur-sm hover:shadow-xl hover:shadow-emerald-500/5 hover:-translate-y-2 transition-all duration-300">
+                    <div
+                        class="inline-flex items-center justify-center p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="h-8 w-8 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3">Real-Time Queue</h3>
+                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Live queue updates and estimated
+                        wait
+                        times for better planning and reduced anxiety.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div
+                    class="group bg-white dark:bg-slate-900/60 p-8 rounded-3xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 backdrop-blur-sm hover:shadow-xl hover:shadow-amber-500/5 hover:-translate-y-2 transition-all duration-300">
+                    <div
+                        class="inline-flex items-center justify-center p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="h-8 w-8 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3">Easy Appointments</h3>
+                    <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Book appointments online or join
+                        walk-in queues instantly with our seamless booking system.</p>
                 </div>
             </div>
         </div>
