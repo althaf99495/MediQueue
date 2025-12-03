@@ -201,10 +201,27 @@ def join_queue(doctor_id):
         status='waiting',
         priority=0
     )
+    
+    # Calculate queue number for today
+    today_start = datetime.combine(datetime.utcnow().date(), dt_time.min)
+    today_end = datetime.combine(datetime.utcnow().date(), dt_time.max)
+    
+    last_entry = QueueEntry.query.filter(
+        QueueEntry.doctor_id == doctor_id,
+        QueueEntry.joined_at >= today_start,
+        QueueEntry.joined_at <= today_end
+    ).order_by(QueueEntry.queue_number.desc()).first()
+    
+    next_number = 1
+    if last_entry and last_entry.queue_number:
+        next_number = last_entry.queue_number + 1
+        
+    queue_entry.queue_number = next_number
+    
     db.session.add(queue_entry)
     db.session.commit()
     
-    queue_service.enqueue(current_user.id, doctor_id, priority=0)
+    queue_service.enqueue(current_user.id, doctor_id, priority=0, queue_number=next_number)
     # notify doctor and patient about queue update
     try:
         current_queue = queue_service.get_queue(doctor_id)

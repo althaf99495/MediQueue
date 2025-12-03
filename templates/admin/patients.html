@@ -104,6 +104,11 @@
                                 Blood Group: <span class="font-medium text-rose-600 dark:text-rose-400">{{
                                     patient.blood_group or 'N/A' }}</span>
                             </div>
+                            <div class="mt-1">
+                                <a href="{{ url_for('admin.view_patient', patient_id=patient.id) }}"
+                                    class="text-xs font-medium text-teal-600 hover:text-teal-900 dark:text-teal-400 dark:hover:text-teal-300">View
+                                    Details &rarr;</a>
+                            </div>
                         </td>
                         <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
                             {{ patient.created_at.strftime('%Y-%m-%d') }}

@@ -2,42 +2,179 @@
 
 {% block dashboard_content %}
 <div class="space-y-8">
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <a href="{{ url_for('patient.qr_checkin') }}" class="block group">
+            <div
+                class="rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white shadow-lg transition-transform duration-300 group-hover:scale-[1.02]">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-bold">Hospital Entry QR</h3>
+                        <p class="mt-2 text-indigo-100 text-sm">Show at entrance</p>
+                    </div>
+                    <div class="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" />
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
     {% if queue_position %}
     <div class="overflow-hidden rounded-2xl bg-teal-600 text-white shadow-lg relative p-8">
         <h2 class="text-4xl font-bold text-center mb-4">Queue Position</h2>
         <div class="text-center">
-            <div class="text-8xl font-bold">{{ queue_position.position }}</div>
-            <p class="text-2xl mt-4">of {{ queue_position.total }} patients</p>
-            <p class="mt-4">Estimated Wait: {{ estimated_wait }} mins</p>
+            <div class="text-8xl font-bold" id="queue-position">{{ queue_position.position }}</div>
+            <p class="text-2xl mt-4">of <span id="queue-total">{{ queue_position.total }}</span> patients</p>
+            <div class="mt-4 p-4 bg-white/10 rounded-xl inline-block">
+                <p class="text-sm uppercase tracking-wider opacity-80">Your Token Number</p>
+                <p class="text-3xl font-bold" id="queue-number">#{{ queue_position.entry.queue_number }}</p>
+            </div>
+            <p class="mt-4">Estimated Wait: <span id="estimated-wait">{{ estimated_wait }}</span> mins</p>
             <p class="mt-2">Doctor: Dr. {{ doctor_name }}</p>
+            <div class="mt-8 text-center">
+                <a href="{{ url_for('patient.leave_queue') }}"
+                    class="inline-flex items-center rounded-lg bg-white/20 px-6 py-3 text-white hover:bg-white/30">Leave
+                    Queue</a>
+            </div>
         </div>
-        <div class="mt-8 text-center">
-            <a href="{{ url_for('patient.leave_queue') }}"
-                class="inline-flex items-center rounded-lg bg-white/20 px-6 py-3 text-white hover:bg-white/30">Leave
-                Queue</a>
+        {% else %}
+        <div class="rounded-2xl bg-white p-12 text-center shadow-sm dark:bg-slate-900">
+            <h3 class="text-xl font-bold">Not in any queue</h3>
+            <p class="mt-4">Book an appointment to join the queue</p>
+            <a href="{{ url_for('patient.book_appointment') }}"
+                class="mt-6 inline-flex items-center rounded-lg bg-teal-600 px-6 py-3 text-white">Book Appointment</a>
         </div>
+        {% endif %}
     </div>
-    {% else %}
-    <div class="rounded-2xl bg-white p-12 text-center shadow-sm dark:bg-slate-900">
-        <h3 class="text-xl font-bold">Not in any queue</h3>
-        <p class="mt-4">Book an appointment to join the queue</p>
-        <a href="{{ url_for('patient.book_appointment') }}"
-            class="mt-6 inline-flex items-center rounded-lg bg-teal-600 px-6 py-3 text-white">Book Appointment</a>
+
+    <!-- Upcoming Appointments Section -->
+    <div class="rounded-2xl bg-white p-6 shadow-sm dark:bg-[#0B1121] border border-slate-200 dark:border-slate-800">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Upcoming Appointments</h3>
+            <a href="{{ url_for('patient.book_appointment') }}"
+                class="text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400">
+                Book New
+            </a>
+        </div>
+
+        {% if appointments %}
+        <div class="space-y-4">
+            {% for appointment in appointments %}
+            <div
+                class="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="h-12 w-12 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-teal-600 dark:text-teal-400 font-bold text-lg">
+                        {{ appointment.doctor.full_name[0] }}
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-slate-900 dark:text-white">Dr. {{ appointment.doctor.full_name }}
+                        </h4>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">{{ appointment.department.name }}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="font-medium text-slate-900 dark:text-white">
+                        {{ appointment.appointment_date.strftime('%b %d, %Y') }}
+                    </div>
+                    <div class="text-sm text-slate-500 dark:text-slate-400">
+                        {{ appointment.slot_time }}
+                    </div>
+                    <span
+                        class="inline-flex items-center rounded-full bg-teal-50 px-2 py-1 text-xs font-medium text-teal-700 ring-1 ring-inset ring-teal-600/20 dark:bg-teal-900/30 dark:text-teal-400">
+                        {{ appointment.status|title }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <div
+                class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
+                <svg class="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <p class="text-slate-500 dark:text-slate-400">No upcoming appointments</p>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
 {% endblock %}
 
 {% block extra_js %}
-{% if queue_position %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 <script>
-    setInterval(function () {
-        fetch('/api/queue/status/{{ queue_position.id }}')
-            .then(r => r.json())
-            .then(data => {
-                if (data.position) document.querySelector('.text-8xl').textContent = data.position;
-            });
-    }, 5000);
+    const socket = io();
+    const currentUserId = {{ current_user.id }};
+
+    // Join user's personal room
+    socket.on('connect', () => {
+        console.log('Connected to WebSocket');
+    });
+
+    // Listen for queue updates specifically for this user
+    socket.on('queue:joined', (data) => {
+        if (data.position) {
+            location.reload(); // Reload to show queue card
+        }
+    });
+
+    socket.on('queue:left', (data) => {
+        if (data.patient_id == currentUserId) {
+            location.reload(); // Reload to remove queue card
+        }
+    });
+
+    // Listen for general queue updates to update position
+    {% if queue_position %}
+    const doctorId = {{ queue_position.doctor_id }};
+
+    socket.on('queue:update', (data) => {
+        if (data.doctor_id == doctorId) {
+            // Find our position in the new queue list
+            const myEntry = data.queue.find(entry => entry.patient_id == currentUserId);
+
+            if (myEntry) {
+                document.getElementById('queue-position').textContent = myEntry.position;
+                document.getElementById('queue-total').textContent = data.queue.length;
+
+                // Update estimated wait (approximate)
+                // Assuming 15 mins per patient ahead
+                const patientsAhead = myEntry.position - 1;
+                const waitTime = patientsAhead * 15; // You might want to pass avg time from backend
+                document.getElementById('estimated-wait').textContent = waitTime;
+            }
+        }
+    });
+
+    socket.on('patient:called', (data) => {
+        if (data.patient_id == currentUserId) {
+            // Show notification or alert
+            if (Notification.permission === "granted") {
+                new Notification("It's your turn!", {
+                    body: "Dr. {{ doctor_name }} is ready to see you now."
+                });
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        new Notification("It's your turn!", {
+                            body: "Dr. {{ doctor_name }} is ready to see you now."
+                        });
+                    }
+                });
+            }
+            alert("It's your turn! Please proceed to the doctor's room.");
+        }
+    });
+    {% endif %}
 </script>
-{% endif %}
 {% endblock %}

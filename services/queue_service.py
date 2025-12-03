@@ -41,12 +41,12 @@ class QueueService:
                     # Test the connection
                     redis_client = redis.Redis(connection_pool=cls._redis_pool)
                     response = redis_client.ping()
-                    print(f"✓ Redis connection successful, ping response: {response}")
+                    print(f"[OK] Redis connection successful, ping response: {response}")
                     cls._instance.redis_client = redis_client
                     cls._instance.use_redis = True
                     
                 except (redis.ConnectionError, ConnectionRefusedError, Exception) as e:
-                    print(f"⚠ Warning: Could not connect to Redis at {redis_url}")
+                    print(f"[WARN] Warning: Could not connect to Redis at {redis_url}")
                     print(f"   Error: {str(e)}")
                     print(f"   Falling back to in-memory queue storage.")
                     print(f"   Note: Queue data will not persist across server restarts.")
@@ -79,7 +79,7 @@ class QueueService:
     def _get_position_key(self, patient_id):
         return f"position:patient:{patient_id}"
     
-    def enqueue(self, patient_id, doctor_id, priority=0, appointment_id=None):
+    def enqueue(self, patient_id, doctor_id, priority=0, appointment_id=None, queue_number=None):
         if self.use_redis and self.redis_client:
             queue_key = self._get_queue_key(doctor_id)
             position_key = self._get_position_key(patient_id)
@@ -89,6 +89,7 @@ class QueueService:
                 'doctor_id': doctor_id,
                 'priority': priority,
                 'appointment_id': appointment_id,
+                'queue_number': queue_number,
                 'joined_at': datetime.utcnow().isoformat()
             }
             
@@ -105,6 +106,7 @@ class QueueService:
                     'doctor_id': doctor_id,
                     'priority': priority,
                     'appointment_id': appointment_id,
+                    'queue_number': queue_number,
                     'joined_at': datetime.utcnow().isoformat()
                 }
                 

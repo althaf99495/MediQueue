@@ -1,0 +1,6 @@
+test_delete_doctor (__main__.TestDeleteDoctor.test_delete_doctor) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 1.588s
+
+OK

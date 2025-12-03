@@ -94,6 +94,7 @@ class QueueEntry(db.Model):
     appointment_id = db.Column(db.Integer, db.ForeignKey('appointments.id'), nullable=True)
     
     queue_position = db.Column(db.Integer)
+    queue_number = db.Column(db.Integer)
     status = db.Column(db.String(20), default='waiting')
     priority = db.Column(db.Integer, default=0)
     
@@ -175,3 +176,21 @@ class DoctorAvailability(db.Model):
     is_available = db.Column(db.Boolean, default=True)
     
     doctor = db.relationship('User', backref='availability_schedule')
+
+class Payment(db.Model):
+    __tablename__ = 'payments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    appointment_id = db.Column(db.Integer, db.ForeignKey('appointments.id'), nullable=True)
+    
+    amount = db.Column(db.Float, nullable=False)
+    payment_method = db.Column(db.String(50), nullable=False) # cash, card, online, insurance
+    status = db.Column(db.String(20), default='completed') # pending, completed, refunded
+    transaction_id = db.Column(db.String(100))
+    notes = db.Column(db.Text)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    patient = db.relationship('User', foreign_keys=[patient_id], backref='payments')
+    appointment = db.relationship('Appointment', backref='payments')

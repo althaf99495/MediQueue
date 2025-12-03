@@ -1,74 +1,91 @@
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<!DOCTYPE html>
+<html lang="en">
 
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-    tailwind.config = {
-        darkMode: 'class',
-        theme: {
-            extend: {
-                fontFamily: {
-                    sans: ['Inter', 'sans-serif'],
-                    display: ['Outfit', 'sans-serif'],
-                },
-                colors: {
-                    teal: {
-                        400: '#2dd4bf',
-                        500: '#14b8a6',
-                        600: '#0d9488',
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediQueue - Smart Hospital Queue Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
                     },
-                    emerald: {
-                        400: '#34d399',
-                        500: '#10b981',
+                    colors: {
+                        teal: {
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                        },
+                        emerald: {
+                            400: '#34d399',
+                            500: '#10b981',
+                        },
+                        slate: {
+                            850: '#1e293b',
+                            900: '#0f172a',
+                            950: '#020617',
+                        }
                     },
-                    slate: {
-                        850: '#1e293b',
-                        900: '#0f172a',
-                        950: '#020617',
-                    }
-                },
-                animation: {
-                    'blob': 'blob 7s infinite',
-                },
-                keyframes: {
-                    blob: {
-                        '0%': { transform: 'translate(0px, 0px) scale(1)' },
-                        '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-                        '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-                        '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
                     }
                 }
             }
         }
-    }
-</script>
+    </script>
 
-<style>
-    /* Custom Scrollbar for Webkit */
-    ::-webkit-scrollbar {
-        width: 8px;
-    }
+    <style>
+        /* Custom Scrollbar for Webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
 
-    ::-webkit-scrollbar-track {
-        background: transparent;
-    }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
 
-    ::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 4px;
-    }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
 
-    .dark ::-webkit-scrollbar-thumb {
-        background: #334155;
-    }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
 
-    ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-    }
-</style>
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
 
-{% block extra_css %}{% endblock %}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body
@@ -291,7 +308,7 @@
                     <span class="text-sm font-bold text-slate-900 dark:text-white">MediQueue</span>
                 </div>
                 <p class="text-center text-sm text-slate-500 dark:text-slate-400">&copy; 2025 MediQueue. Smart Hospital
-                    Queue Management System.</p>
+                    Queue Management System. Developed by Althaf.</p>
             </div>
         </div>
     </footer>
@@ -308,13 +325,13 @@
         var themeToggleDarkIconMobile = document.getElementById('theme-toggle-dark-icon-mobile');
         var themeToggleLightIconMobile = document.getElementById('theme-toggle-light-icon-mobile');
 
-        // Change the icons inside the button based on previous settings
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            themeToggleLightIcon.classList.remove('hidden');
-            themeToggleLightIconMobile.classList.remove('hidden');
+        // Change the icons inside the button based on current mode
+        if (document.documentElement.classList.contains('dark')) {
+            if (themeToggleLightIcon) themeToggleLightIcon.classList.remove('hidden');
+            if (themeToggleLightIconMobile) themeToggleLightIconMobile.classList.remove('hidden');
         } else {
-            themeToggleDarkIcon.classList.remove('hidden');
-            themeToggleDarkIconMobile.classList.remove('hidden');
+            if (themeToggleDarkIcon) themeToggleDarkIcon.classList.remove('hidden');
+            if (themeToggleDarkIconMobile) themeToggleDarkIconMobile.classList.remove('hidden');
         }
 
         var themeToggleBtn = document.getElementById('theme-toggle');
@@ -322,10 +339,10 @@
 
         function toggleTheme() {
             // toggle icons inside button
-            themeToggleDarkIcon.classList.toggle('hidden');
-            themeToggleLightIcon.classList.toggle('hidden');
-            themeToggleDarkIconMobile.classList.toggle('hidden');
-            themeToggleLightIconMobile.classList.toggle('hidden');
+            if (themeToggleDarkIcon) themeToggleDarkIcon.classList.toggle('hidden');
+            if (themeToggleLightIcon) themeToggleLightIcon.classList.toggle('hidden');
+            if (themeToggleDarkIconMobile) themeToggleDarkIconMobile.classList.toggle('hidden');
+            if (themeToggleLightIconMobile) themeToggleLightIconMobile.classList.toggle('hidden');
 
             // if set via local storage previously
             if (localStorage.getItem('theme')) {
@@ -349,8 +366,8 @@
             }
         }
 
-        themeToggleBtn.addEventListener('click', toggleTheme);
-        themeToggleBtnMobile.addEventListener('click', toggleTheme);
+        if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
+        if (themeToggleBtnMobile) themeToggleBtnMobile.addEventListener('click', toggleTheme);
     </script>
     {% block extra_js %}{% endblock %}
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>

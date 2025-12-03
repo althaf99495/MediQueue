@@ -184,10 +184,8 @@ if __name__ == '__main__':
         print(f"Swagger UI:    http://localhost:{port}/api/docs")
         print("="*60 + "\n")
         
-        # Use Waitress to serve the Flask app
-        # Flask-SocketIO in threading mode works with any WSGI server
-        # SocketIO is already initialized with the app, so it will work with Waitress
-        serve(app, host='0.0.0.0', port=port, threads=4)
+        # Use SocketIO to serve the Flask app (supports WebSockets)
+        socketio.run(app, host='0.0.0.0', port=port, allow_unsafe_werkzeug=True)
         
     except Exception as e:
         print("\nERROR: Failed to start the server!")

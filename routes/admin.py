@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, send_file, Response
 from flask_login import login_required, current_user
-from models import db, User, Appointment, QueueEntry, MedicalRecord, Department, DoctorAvailability, Prescription, Report
+from models import db, User, Appointment, QueueEntry, MedicalRecord, Department, DoctorAvailability, Prescription, Report, Payment
 from services import QueueService
 from datetime import datetime, timedelta
 from functools import wraps
@@ -255,6 +255,53 @@ def add_doctor():
             return jsonify({'success': False, 'message': f'Error adding doctor: {str(e)}'}), 500
         flash(f'Error adding doctor: {str(e)}', 'danger')
         return redirect(url_for('admin.manage_doctors'))
+
+@admin_bp.route('/doctors/<int:doctor_id>/edit', methods=['POST'])
+@login_required
+@admin_required
+def edit_doctor(doctor_id):
+    doctor = User.query.get_or_404(doctor_id)
+    
+    if not doctor.is_doctor():
+        return jsonify({'success': False, 'message': 'Invalid doctor.'}), 400
+        
+    if request.is_json:
+        data = request.get_json()
+        
+        # Update fields
+        if 'full_name' in data:
+            doctor.full_name = data['full_name']
+        if 'email' in data:
+            # Check if email is taken by another user
+            existing = User.query.filter_by(email=data['email']).first()
+            if existing and existing.id != doctor.id:
+                return jsonify({'success': False, 'message': 'Email already in use.'}), 400
+            doctor.email = data['email']
+        if 'phone' in data:
+            doctor.phone = data['phone']
+        if 'department_id' in data:
+            doctor.department_id = data['department_id'] or None
+        if 'specialization' in data:
+            doctor.specialization = data['specialization']
+        if 'consultation_fee' in data:
+            try:
+                doctor.consultation_fee = float(data['consultation_fee'])
+            except (ValueError, TypeError):
+                pass
+        if 'avg_consultation_time' in data:
+            try:
+                doctor.avg_consultation_time = int(data['avg_consultation_time'])
+            except (ValueError, TypeError):
+                pass
+                
+        try:
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'Doctor updated successfully!'})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'message': f'Error updating doctor: {str(e)}'}), 500
+            
+    return jsonify({'success': False, 'message': 'Invalid request format.'}), 400
 
 @admin_bp.route('/doctors/<int:doctor_id>/delete', methods=['POST'])
 @login_required
@@ -712,3 +759,88 @@ def manage_appointments():
         status_filter=status_filter,
         search=search
     )
+
+@admin_bp.route('/patients/<int:patient_id>')
+@login_required
+@admin_required
+def view_patient(patient_id):
+    patient = User.query.get_or_404(patient_id)
+    if not patient.is_patient():
+        flash('User is not a patient.', 'danger')
+        return redirect(url_for('admin.manage_patients'))
+        
+    appointments = Appointment.query.filter_by(patient_id=patient.id).order_by(Appointment.appointment_date.desc()).all()
+    medical_records = MedicalRecord.query.filter_by(patient_id=patient.id).order_by(MedicalRecord.visit_date.desc()).all()
+    payments = Payment.query.filter_by(patient_id=patient.id).order_by(Payment.created_at.desc()).all()
+    
+    return render_template(
+        'admin/patient_details.html',
+        patient=patient,
+        appointments=appointments,
+        medical_records=medical_records,
+        payments=payments
+    )
+
+@admin_bp.route('/payments')
+@login_required
+@admin_required
+def manage_payments():
+    search = request.args.get('search', '')
+    
+    query = Payment.query.join(User, Payment.patient_id == User.id)
+    
+    if search:
+        query = query.filter(
+            db.or_(
+                User.full_name.ilike(f'%{search}%'),
+                User.email.ilike(f'%{search}%'),
+                Payment.transaction_id.ilike(f'%{search}%')
+            )
+        )
+    
+    payments = query.order_by(Payment.created_at.desc()).all()
+    
+    # For the add payment modal
+    patients = User.query.filter_by(role='patient', is_active=True).all()
+    
+    return render_template('admin/payments.html', payments=payments, patients=patients, search=search)
+
+@admin_bp.route('/payments/add', methods=['POST'])
+@login_required
+@admin_required
+def add_payment():
+    patient_id = request.form.get('patient_id')
+    amount = request.form.get('amount')
+    payment_method = request.form.get('payment_method')
+    status = request.form.get('status', 'completed')
+    transaction_id = request.form.get('transaction_id')
+    notes = request.form.get('notes')
+    
+    if not patient_id or not amount or not payment_method:
+        flash('Missing required fields.', 'danger')
+        return redirect(url_for('admin.manage_payments'))
+        
+    try:
+        amount = float(amount)
+    except ValueError:
+        flash('Invalid amount.', 'danger')
+        return redirect(url_for('admin.manage_payments'))
+        
+    payment = Payment(
+        patient_id=patient_id,
+        amount=amount,
+        payment_method=payment_method,
+        status=status,
+        transaction_id=transaction_id,
+        notes=notes
+    )
+    
+    try:
+        db.session.add(payment)
+        db.session.commit()
+        flash('Payment recorded successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error recording payment: {str(e)}', 'danger')
+        
+    return redirect(url_for('admin.manage_payments'))

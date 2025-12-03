@@ -1,0 +1,225 @@
+{% extends "dashboard_base.html" %}
+
+{% block header_title %}Manage Payments{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <!-- Header Actions -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h2 class="text-lg font-medium text-slate-900 dark:text-white">Payments</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Track and manage patient payments.</p>
+        </div>
+        <button type="button" data-bs-toggle="modal" data-bs-target="#addPaymentModal"
+            class="inline-flex items-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
+            <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Record Payment
+        </button>
+    </div>
+
+    <!-- Search -->
+    <div class="rounded-xl bg-white p-4 shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+        <form method="GET" action="{{ url_for('admin.manage_payments') }}" class="flex gap-4">
+            <div class="relative flex-grow">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input type="text" name="search"
+                    class="block w-full rounded-lg border border-slate-300 bg-slate-50 py-2 pl-10 pr-3 text-sm placeholder-slate-500 focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-400"
+                    placeholder="Search by patient, email, or transaction ID..." value="{{ search or '' }}">
+            </div>
+            <button type="submit"
+                class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 dark:bg-slate-700 dark:hover:bg-slate-600">
+                Search
+            </button>
+            {% if search %}
+            <a href="{{ url_for('admin.manage_payments') }}"
+                class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                Clear
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-slate-900 dark:border dark:border-slate-800">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                <thead class="bg-slate-50 dark:bg-slate-800/50">
+                    <tr>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Date</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Patient</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Amount</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Method</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Transaction ID</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
+                    {% for payment in payments %}
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
+                            {{ payment.created_at.strftime('%Y-%m-%d %H:%M') }}
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4">
+                            <div class="text-sm font-medium text-slate-900 dark:text-white">{{ payment.patient.full_name
+                                }}</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400">{{ payment.patient.email }}</div>
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4 text-sm font-bold text-slate-900 dark:text-white">
+                            ${{ "%.2f"|format(payment.amount) }}
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-700 dark:text-slate-300">
+                            {{ payment.payment_method|title }}
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400 font-mono">
+                            {{ payment.transaction_id or '-' }}
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4">
+                            <span
+                                class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 
+                                {% if payment.status == 'completed' %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300
+                                {% elif payment.status == 'refunded' %}bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300
+                                {% else %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300{% endif %}">
+                                {{ payment.status|title }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                            <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p class="mt-2">No payments recorded yet.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Payment Modal -->
+<div class="modal fade fixed left-0 top-0 hidden h-full w-full overflow-y-auto overflow-x-hidden outline-none"
+    id="addPaymentModal" tabindex="-1" aria-labelledby="addPaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog relative pointer-events-none w-auto max-w-lg">
+        <div
+            class="modal-content relative flex w-full flex-col rounded-xl border-none bg-white bg-clip-padding text-current shadow-lg outline-none pointer-events-auto dark:bg-slate-800">
+            <div
+                class="modal-header flex flex-shrink-0 items-center justify-between rounded-t-xl border-b border-slate-200 p-4 dark:border-slate-700">
+                <h5 class="text-xl font-medium leading-normal text-slate-800 dark:text-white" id="addPaymentModalLabel">
+                    Record Payment
+                </h5>
+                <button type="button"
+                    class="box-content h-4 w-4 rounded-none border-none p-1 text-black opacity-50 hover:text-black hover:no-underline hover:opacity-75 focus:opacity-100 focus:shadow-none focus:outline-none dark:text-white"
+                    data-bs-dismiss="modal" aria-label="Close">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form action="{{ url_for('admin.add_payment') }}" method="POST">
+                <div class="modal-body relative p-6">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-4">
+                        <label for="patient_id"
+                            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Patient</label>
+                        <select name="patient_id" id="patient_id" required
+                            class="block w-full rounded-lg border border-slate-300 bg-slate-50 p-2.5 text-sm text-slate-900 focus:border-teal-500 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 dark:focus:border-teal-500 dark:focus:ring-teal-500">
+                            <option value="">Select Patient</option>
+                            {% for patient in patients %}
+                            <option value="{{ patient.id }}">{{ patient.full_name }} ({{ patient.email }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="amount"
+                            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Amount ($)</label>
+                        <input type="number" step="0.01" name="amount" id="amount" required
+                            class="block w-full rounded-lg border border-slate-300 bg-slate-50 p-2.5 text-sm text-slate-900 focus:border-teal-500 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 dark:focus:border-teal-500 dark:focus:ring-teal-500"
+                            placeholder="0.00">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="mb-4">
+                            <label for="payment_method"
+                                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Method</label>
+                            <select name="payment_method" id="payment_method" required
+                                class="block w-full rounded-lg border border-slate-300 bg-slate-50 p-2.5 text-sm text-slate-900 focus:border-teal-500 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 dark:focus:border-teal-500 dark:focus:ring-teal-500">
+                                <option value="cash">Cash</option>
+                                <option value="card">Card</option>
+                                <option value="online">Online</option>
+                                <option value="insurance">Insurance</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="status"
+                                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Status</label>
+                            <select name="status" id="status" required
+                                class="block w-full rounded-lg border border-slate-300 bg-slate-50 p-2.5 text-sm text-slate-900 focus:border-teal-500 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 dark:focus:border-teal-500 dark:focus:ring-teal-500">
+                                <option value="completed">Completed</option>
+                                <option value="pending">Pending</option>
+                                <option value="refunded">Refunded</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="transaction_id"
+                            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Transaction ID
+                            (Optional)</label>
+                        <input type="text" name="transaction_id" id="transaction_id"
+                            class="block w-full rounded-lg border border-slate-300 bg-slate-50 p-2.5 text-sm text-slate-900 focus:border-teal-500 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 dark:focus:border-teal-500 dark:focus:ring-teal-500"
+                            placeholder="e.g. TXN-12345678">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="notes"
+                            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Notes</label>
+                        <textarea name="notes" id="notes" rows="3"
+                            class="block w-full rounded-lg border border-slate-300 bg-slate-50 p-2.5 text-sm text-slate-900 focus:border-teal-500 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 dark:focus:border-teal-500 dark:focus:ring-teal-500"
+                            placeholder="Additional notes..."></textarea>
+                    </div>
+                </div>
+                <div
+                    class="modal-footer flex flex-shrink-0 flex-wrap items-center justify-end rounded-b-xl border-t border-slate-200 p-4 dark:border-slate-700">
+                    <button type="button"
+                        class="mr-2 rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
+                        data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
+                        Save Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
