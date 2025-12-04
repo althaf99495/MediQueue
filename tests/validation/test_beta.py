@@ -49,6 +49,7 @@ class TestUserAcceptanceScenarios:
             doctor.set_password('pass123')
             print(f"DEBUG: Doctor password hash: {doctor.password_hash}")
             db.session.add(doctor)
+            db.session.flush()
             
             from models import DoctorAvailability
             doctor_id = doctor.id

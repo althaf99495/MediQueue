@@ -120,7 +120,10 @@ def department(test_app):
 @pytest.fixture(scope='function')
 def queue_service_instance():
     """Create a QueueService instance for testing."""
-    return QueueService()
+    service = QueueService()
+    service.clear_all()
+    yield service
+    service.clear_all()
 
 
 @pytest.fixture(scope='function')

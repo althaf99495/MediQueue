@@ -33,13 +33,14 @@ class TestPatientQueueVisibility:
                 patient_id=patient.id,
                 doctor_id=doctor_user.id,
                 status='waiting',
-                priority=0
+                priority=0,
+                queue_number=1
             )
             db.session.add(queue_entry)
             db.session.commit()
             
             # Add to QueueService (Redis/Memory)
-            queue_service.enqueue(patient.id, doctor_user.id, priority=0)
+            queue_service.enqueue(patient.id, doctor_user.id, priority=0, queue_number=1)
             
         # Now check the dashboard
         response = authenticated_patient.get('/patient/dashboard')
@@ -49,7 +50,7 @@ class TestPatientQueueVisibility:
         html = response.data.decode('utf-8')
         
         # These strings are from templates/patient/dashboard.html
-        assert "You are in the queue!" in html
-        assert "Queue #" in html
+        assert "Queue Position" in html
+        assert "Your Token Number" in html
         assert f"Dr. {doctor_user.full_name}" in html
-        assert "Estimated wait time:" in html
+        assert "Estimated Wait:" in html
