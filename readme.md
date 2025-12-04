@@ -1,7 +1,9 @@
 # MediQueue - Smart Hospital Queue Management System
 
-## Overview
-MediQueue is a comprehensive hospital queue and appointment management platform built with Flask, PostgreSQL, and Redis. The system digitizes patient-doctor interactions, reduces waiting times, and provides real-time updates through a modern web interface.
+> A modern, real-time Hospital Queue Management System built with Flask, Redis, and Socket.IO for seamless patient-doctor interaction.
+
+## About
+MediQueue digitizes the hospital experience by providing real-time queue tracking, role-based dashboards (Admin, Doctor, Patient), and digital prescription management. It leverages Redis for high-performance queue operations and WebSockets for live updates, ensuring a smooth flow for both medical staff and patients.
 
 ## Recent Changes
 - **2025-11-07**: Initial project setup
@@ -77,7 +79,14 @@ mediqueue/
 - Medical history and prescription access
 - QR code check-in for hospital kiosks
 
-### Key Features
+## Key Features
+
+- 🏥 **Role-Based Dashboards**: Dedicated interfaces for Admins, Doctors, and Patients.
+- ⚡ **Real-Time Queues**: Redis-powered queuing with live WebSocket updates.
+- 📱 **QR Code Check-in**: Contactless patient entry and queue joining.
+- 📄 **Digital Prescriptions**: PDF generation and medical history tracking.
+- 📊 **Admin Analytics**: Comprehensive insights into hospital performance.
+- 🎨 **Modern UI**: Responsive, medical-themed design with dark/light modes.
 
 #### Queue Management
 - Redis-powered queue system with high-speed operations
