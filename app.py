@@ -1,3 +1,5 @@
+import eventlet
+eventlet.monkey_patch()
 import os
 from flask import Flask, Blueprint, render_template, redirect, url_for, flash
 from flask_login import LoginManager, current_user
@@ -23,7 +25,7 @@ logger.setLevel(logging.DEBUG)
 db.init_app(app)
 socketio.init_app(app, 
     cors_allowed_origins="*",
-    async_mode='threading',
+    async_mode='eventlet',
     async_handlers=True
 )
 api.init_app(app)
